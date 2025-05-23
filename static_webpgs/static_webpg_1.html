@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Futuristic World Clock</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background: radial-gradient(circle at center, #0f0f0f, #050505);
+      color: #00ffe1;
+      font-family: 'Orbitron', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 0.3em;
+    }
+
+    #time {
+      font-size: 4em;
+      letter-spacing: 0.1em;
+      margin: 0.3em 0;
+      color: #00ffae;
+      text-shadow: 0 0 10px #00ffe1;
+    }
+
+    select {
+      background-color: #0a0a0a;
+      border: 1px solid #00ffe1;
+      color: #00ffe1;
+      padding: 0.5em 1em;
+      font-size: 1em;
+      margin-top: 1em;
+      border-radius: 5px;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    select:focus {
+      outline: none;
+      box-shadow: 0 0 10px #00ffe1;
+    }
+
+    .glow {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        text-shadow: 0 0 10px #00ffe1;
+      }
+      50% {
+        text-shadow: 0 0 20px #00ffae;
+      }
+      100% {
+        text-shadow: 0 0 10px #00ffe1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1 class="glow">World Clock</h1>
+  <div id="time">--:--:--</div>
+  <select id="city-select">
+    <option value="UTC">UTC</option>
+    <option value="America/New_York">New York</option>
+    <option value="Europe/London">London</option>
+    <option value="Asia/Tokyo">Tokyo</option>
+    <option value="America/Argentina/Buenos_Aires">Buenos Aires</option>
+  </select>
+
+  <script>
+    const timeEl = document.getElementById('time');
+    const citySelect = document.getElementById('city-select');
+
+    function updateTime() {
+      const selectedTimezone = citySelect.value;
+      const now = new Date();
+
+      // Convert to selected time zone
+      const options = {
+        timeZone: selectedTimezone,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      };
+
+      const timeString = new Intl.DateTimeFormat([], options).format(now);
+      timeEl.textContent = timeString;
+    }
+
+    setInterval(updateTime, 1000);
+    citySelect.addEventListener('change', updateTime);
+
+    // Initialize on load
+    updateTime();
+  </script>
+</body>
+</html>

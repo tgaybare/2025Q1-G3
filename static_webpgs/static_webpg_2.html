@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Futuristic World Clock</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #00ffcc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 0.2em;
+      text-shadow: 0 0 15px #00ffcc;
+    }
+
+    #clock {
+      font-size: 4em;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-shadow: 0 0 20px #00ffff;
+      margin-bottom: 1em;
+    }
+
+    select {
+      padding: 0.5em 1em;
+      font-size: 1em;
+      border: none;
+      border-radius: 10px;
+      background-color: #12232e;
+      color: #00ffcc;
+      box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+      cursor: pointer;
+    }
+
+    select:focus {
+      outline: none;
+      box-shadow: 0 0 15px #00ffcc;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>World Clock</h1>
+  <div id="clock">--:--:--</div>
+
+  <select id="city-select">
+    <option value="0">UTC</option>
+    <option value="-5">New York (UTC-5)</option>
+    <option value="0">London (UTC+0)</option>
+    <option value="1">Berlin (UTC+1)</option>
+    <option value="5.5">India (UTC+5:30)</option>
+    <option value="8">Beijing (UTC+8)</option>
+    <option value="9">Tokyo (UTC+9)</option>
+    <option value="10">Sydney (UTC+10)</option>
+  </select>
+
+  <script>
+    const clock = document.getElementById('clock');
+    const citySelect = document.getElementById('city-select');
+
+    function updateTime() {
+      const offset = parseFloat(citySelect.value);
+      const now = new Date();
+
+      // Get UTC time then add offset
+      const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+      const localTime = new Date(utc + (3600000 * offset));
+
+      const hours = String(localTime.getHours()).padStart(2, '0');
+      const minutes = String(localTime.getMinutes()).padStart(2, '0');
+      const seconds = String(localTime.getSeconds()).padStart(2, '0');
+
+      clock.textContent = `${hours}:${minutes}:${seconds}`;
+    }
+
+    citySelect.addEventListener('change', updateTime);
+    setInterval(updateTime, 1000);
+    updateTime(); // initial call
+  </script>
+</body>
+</html>

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>F1 Race 2025 - Competitive Racing</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      overflow: hidden;
+      font-family: 'Arial', sans-serif;
+      color: white;
+    }
+
+    svg {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .car {
+      r: 6;
+      stroke: #fff;
+      stroke-width: 1;
+    }
+
+    .highlight {
+      stroke-width: 4;
+    }
+
+    .gold {
+      stroke: gold;
+      filter: drop-shadow(0 0 4px gold);
+    }
+
+    .silver {
+      stroke: silver;
+      filter: drop-shadow(0 0 4px silver);
+    }
+
+    .bronze {
+      stroke: peru;
+      filter: drop-shadow(0 0 4px peru);
+    }
+
+    .button-container {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .toggle-button, .reset-button {
+      padding: 10px 20px;
+      background-color: #444;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .toggle-button:hover, .reset-button:hover {
+      background-color: #555;
+    }
+
+    .toggle-button:active, .reset-button:active {
+      background-color: #333;
+    }
+
+    .lap-counter {
+      position: absolute;
+      top: 60px;
+      left: 20px;
+      font-size: 24px;
+      color: white;
+      z-index: 100;
+    }
+
+    .leaderboard {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 15px;
+      border-radius: 10px;
+      width: 200px;
+      max-height: 90vh;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .leaderboard-title {
+      text-align: center;
+      font-size: 20px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #444;
+      padding-bottom: 5px;
+    }
+
+    .leaderboard-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 5px 0;
+      padding: 5px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .leaderboard-item:hover {
+      background-color: #333;
+    }
+
+    .leaderboard-item.active {
+      background-color: #555;
+      font-weight: bold;
+    }
+
+    .position {
+      width: 20px;
+    }
+
+    .driver-color {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+
+    .driver-name {
+      flex-grow: 1;
+      text-align: left;
+    }
+
+    .driver-time {
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="button-container">
+    <button class="toggle-button" id="toggleCamera">Disable Camera Follow</button>
+    <button class="reset-button" id="resetFollow">Follow Leader</button>
+  </div>
+  <div class="lap-counter" id="lapCounter">Lap: 1</div>
+
+  <div class="leaderboard" id="leaderboard">
+    <div class="leaderboard-title">LEADERBOARD</div>
+    <div id="leaderboard-content"></div>
+  </div>
+
+  <svg id="race-svg" viewBox="0 0 1000 600">
+    <g id="camera">
+        <path id="track" d="
+        M200,500
+        C300,400 350,350 500,300
+        C650,250 700,200 750,150
+        C775,125 800,100 750,75
+        C700,50 600,50 500,75
+        C400,100 300,150 200,250
+        C100,350 100,400 200,500
+        Z"
+        fill="none" stroke="#333" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="200" y1="525" x2="200" y2="467" stroke="white" stroke-width="4"></line>
+        <g id="cars"></g>
+    </g>
+  </svg>
+
+  <script>
+    const svg = document.getElementById("race-svg");
+    const cameraGroup = document.getElementById("camera");
+    const path = document.getElementById("track");
+    const carsGroup = document.getElementById("cars");
+    const pathLength = path.getTotalLength();
+    const toggleButton = document.getElementById("toggleCamera");
+    const resetButton = document.getElementById("resetFollow");
+    const lapCounter = document.getElementById("lapCounter");
+    const leaderboardContent = document.getElementById("leaderboard-content");
+
+    let cameraFollow = true;
+    let zoomLevel = 1.8;  // Default zoom when camera follow is enabled
+    let lapNumber = 1; // Start from lap 1
+    let raceStarted = false;
+    let followingCarId = 0; // Id of car being followed
+    let lastLeaderboardUpdate = 0; // Track when we last updated the leaderboard
+
+    // Updated for 2025 lineup
+    const teamNames = [
+      "Red Bull", "Red Bull", "Ferrari", "Ferrari", "Mercedes", "Mercedes",
+      "McLaren", "McLaren", "Aston Martin", "Aston Martin", "Alpine", "Alpine",
+      "Williams", "Williams", "Racing Bulls", "Racing Bulls", "Kick Sauber", "Kick Sauber",
+      "Haas", "Haas"
+    ];
+
+    // Updated for 2025 lineup
+    const driverLastNames = [
+      "Verstappen", "Tsunoda", "Leclerc", "Hamilton", "Russell", "Antonelli", 
+      "Norris", "Piastri", "Alonso", "Stroll", "Gasly", "Doohan",
+      "Albon", "Sainz", "Lawson", "Hadjar", "Hülkenberg", "Bortoleto", 
+      "Bearman", "Ocon"
+    ];
+
+    // Updated team colors for 2025
+    const carColors = [
+      "#0600EF", "#0600EF", "#DC0000", "#DC0000", "#00D2BE", "#00D2BE", 
+      "#FF8700", "#FF8700", "#006F62", "#006F62", "#0090FF", "#0090FF",
+      "#005AFF", "#005AFF", "#2B4562", "#2B4562", "#00E701", "#00E701",
+      "#FFFFFF", "#FFFFFF"
+    ];
+
+    const NUM_CARS = 20;
+    const cars = [];
+
+    // Create cars with team and driver names - more competitive speeds
+    for (let i = 0; i < NUM_CARS; i++) {
+      const car = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      car.setAttribute("class", "car");
+      car.setAttribute("fill", carColors[i]);
+      carsGroup.appendChild(car);
+
+      // Make cars more competitive with closer base speeds
+      cars.push({
+        el: car,
+        progress: Math.random() * 0.15,  // Initial progress as fraction of track length
+        baseSpeed: 0.0010 + Math.random() * 0.00025, // Higher base speed, more competitive
+        offset: 0,
+        targetOffset: 0,
+        overtaking: false,
+        lastProgress: 0,
+        laps: 0, // Track laps
+        team: teamNames[i],
+        driver: driverLastNames[i],
+        color: carColors[i],
+        startTime: Date.now(),
+        bestLapTime: null,
+        // Add random skill factor that affects racing performance
+        skill: 0.8 + Math.random() * 0.4,
+        // Add random strategies for overtaking
+        aggressiveness: 0.2 + Math.random() * 0.8,
+        // Add unique id for tracking
+        id: i
+      });
+    }
+
+    // Randomize the positions of the cars before 
+    cars.sort(() => Math.random() - 0.5);
+    // Set initial positions of cars
+    cars.forEach((car, index) => {
+      car.el.setAttribute("cx", path.getPointAtLength(car.progress).x);
+      car.el.setAttribute("cy", path.getPointAtLength(car.progress).y);
+    });
+
+    cars.sort((a, b) => b.totalProgress - a.totalProgress);
+
+    // Start by following the first car in the array
+    followingCarId = cars[0].id;
+
+    function getNormal(path, progress) {
+      const delta = 1;
+      const pos = progress * pathLength;
+      const p1 = path.getPointAtLength(pos);
+      const p2 = path.getPointAtLength((pos + delta) % pathLength);
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const len = Math.hypot(dx, dy);
+      return { x: -dy / len, y: dx / len };
+    }
+
+    function formatTime(milliseconds) {
+      const totalSeconds = Math.floor(milliseconds / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      const ms = Math.floor((milliseconds % 1000) / 10);
+      
+      return `${minutes}:${seconds.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+    }
+
+    // Immediately update the camera to follow the selected car
+    function focusCamera(carIndex) {
+      if (!cameraFollow) return;
+      
+      const car = cars[carIndex];
+      const point = path.getPointAtLength(car.progress * pathLength);
+      const centerX = 500, centerY = 300;
+      const scale = zoomLevel;
+
+      const tx = centerX - point.x * scale;
+      const ty = centerY - point.y * scale;
+
+      // Remove any transition - make change immediate
+      cameraGroup.style.transition = "none";
+      cameraGroup.setAttribute("transform", `translate(${tx},${ty}) scale(${scale})`);
+      
+      // Force a reflow to ensure the transition removal is applied
+      void cameraGroup.offsetWidth;
+      
+      // Restore transition for smooth camera movement after the immediate jump
+      setTimeout(() => {
+        cameraGroup.style.transition = "transform 0.1s ease";
+      }, 50);
+    }
+
+    // Sort cars and update leaderboard
+    function updateLapPositions() {
+      // Calculate total progress for each car (laps + progress within current lap)
+      cars.forEach(car => {
+        car.totalProgress = car.laps + car.progress;
+      });
+      
+      // Sort cars by total progress (lap count + progress within lap)
+      cars.sort((a, b) => b.totalProgress - a.totalProgress);
+
+      // Highlight top 3 based on position after sorting
+      cars.forEach((car, index) => {
+        car.el.classList.remove("highlight", "gold", "silver", "bronze");
+        if (index === 0) car.el.classList.add("highlight", "gold");
+        else if (index === 1) car.el.classList.add("highlight", "silver");
+        else if (index === 2) car.el.classList.add("highlight", "bronze");
+      });
+
+      // Update lap number on screen - use the leading car's lap count + 1
+      // (+1 because we display lap numbers starting from 1, not 0)
+      lapNumber = cars[0].laps + 1;
+      lapCounter.textContent = `Lap: ${lapNumber}`;
+      
+      // Only update the leaderboard every 500ms for better performance
+      const now = Date.now();
+      if (now - lastLeaderboardUpdate > 500) {
+        updateLeaderboard();
+        lastLeaderboardUpdate = now;
+      }
+
+      // Randomize the base speed, skill and agresiveness of the cars every 5 seconds for more dynamic racing
+      if (now % 5000 < 100) {
+        cars.forEach(car => {
+          car.baseSpeed = 0.0010 + Math.random() * 0.00025;
+          car.skill = 0.8 + Math.random() * 0.4;
+          car.aggressiveness = 0.2 + Math.random() * 0.8;
+        });
+      }
+
+      // Return the car we're currently following
+      return cars.find(car => car.id === followingCarId);
+    }
+
+    // Function to handle when a driver is clicked in the leaderboard
+    function handleDriverClick(id) {
+      followingCarId = id;
+      // Focus camera immediately
+      focusCamera(followingCarId);
+      // Update leaderboard UI
+      updateLeaderboard();
+    }
+
+    function updateLeaderboard() {
+      // Clear existing leaderboard
+      leaderboardContent.innerHTML = "";
+      
+      // Add each car to leaderboard
+      cars.forEach((car, index) => {
+        const item = document.createElement("div");
+        item.className = "leaderboard-item";
+        if (car.id === followingCarId) {
+          item.classList.add("active");
+        }
+        
+        // Add position number
+        const position = document.createElement("span");
+        position.className = "position";
+        position.textContent = `${index + 1}.`;
+        
+        // Add driver info with color
+        const driverInfo = document.createElement("span");
+        driverInfo.className = "driver-name";
+        
+        const colorDot = document.createElement("span");
+        colorDot.className = "driver-color";
+        colorDot.style.backgroundColor = car.color;
+        
+        driverInfo.appendChild(colorDot);
+        driverInfo.appendChild(document.createTextNode(car.driver));
+        
+        // Add time/gap
+        const time = document.createElement("span");
+        time.className = "driver-time";
+        if (index === 0) {
+          // First car shows "Leader" instead of time
+          time.textContent = "Leader";
+        } else {
+          // Others show gap to leader
+          const gap = (cars[0].totalProgress - car.totalProgress) * 100;
+          time.textContent = `+${gap.toFixed(1)}s`;
+        }
+        
+        // Add elements to item
+        item.appendChild(position);
+        item.appendChild(driverInfo);
+        item.appendChild(time);
+        
+        // Store the car index as a data attribute
+        item.dataset.carIndex = index;
+        
+        // Add click handler
+        item.addEventListener("click", function() {
+          handleDriverClick(parseInt(cars[this.dataset.carIndex].id));
+        });
+        
+        leaderboardContent.appendChild(item);
+      });
+    }
+
+    function animate() {
+      // Update all cars' positions with more competitive racing
+      cars.forEach(car => {
+        // Store the current progress for lap detection
+        car.lastProgress = car.progress;
+        
+        // More dynamic racing with skill and track position factors
+        let speedFactor = car.skill; // Base skill factor
+        
+        // Cars further back get a slight speed boost (rubber-banding)
+        const positionIndex = cars.indexOf(car);
+        const positionBoost = Math.max(0, (positionIndex / NUM_CARS) * 0.15);
+        
+        // Apply more variance based on track position - some parts of track favor different cars
+        const trackVariance = Math.sin(car.progress * Math.PI * 2) * 0.1 * car.skill;
+        
+        // Random factor for exciting moments
+        const momentFactor = (Math.random() - 0.5) * 0.05;
+        
+        // Combine all factors
+        const finalSpeed = car.baseSpeed * (speedFactor + positionBoost + trackVariance + momentFactor);
+        
+        // Move forward by calculated speed
+        car.progress = (car.progress + finalSpeed) % 1;
+
+        // Check if car completed a lap
+        if (car.progress < 0.05 && car.lastProgress > 0.95) {
+          car.laps++;
+          
+          // Record lap time
+          const currentTime = Date.now();
+          const lapTime = currentTime - car.startTime;
+          car.startTime = currentTime;
+          
+          // Update best lap time
+          if (!car.bestLapTime || lapTime < car.bestLapTime) {
+            car.bestLapTime = lapTime;
+          }
+        }
+
+        // Improved overtake logic with more strategy
+        let needsToOvertake = false;
+        let bestOvertakeOffset = 0;
+        
+        // Check for cars ahead
+        for (let i = 0; i < cars.length; i++) {
+          const other = cars[i];
+          if (car === other) continue;
+          
+          // Calculate the effective distance between cars
+          const carTotalProgress = car.laps + car.progress;
+          const otherTotalProgress = other.laps + other.progress;
+          const diff = otherTotalProgress - carTotalProgress;
+          
+          // If there's a car slightly ahead, prepare to overtake
+          // More aggressive cars will attempt overtaking from further back
+          const overtakeDistance = 0.02 + (car.aggressiveness * 0.03);
+          if (diff > 0 && diff < overtakeDistance) {
+            needsToOvertake = true;
+            
+            // Choose overtaking side based on track position and skill
+            const trackPosition = car.progress * Math.PI * 2;
+            const preferredSide = (Math.sin(trackPosition) > 0) ? 1 : -1;
+            
+            // Skilled drivers choose better lines
+            const skillBasedOffset = preferredSide * (5 + car.skill * 7);
+            bestOvertakeOffset = skillBasedOffset;
+            break;
+          }
+        }
+
+        if (needsToOvertake) {
+          if (!car.overtaking) {
+            car.overtaking = true;
+            car.targetOffset = bestOvertakeOffset;
+          }
+        } else {
+          car.overtaking = false;
+          car.targetOffset = 0;
+        }
+
+        // Smoother transitions for car positions
+        car.offset += (car.targetOffset - car.offset) * 0.1;
+
+        // Position the car on screen
+        const point = path.getPointAtLength(car.progress * pathLength);
+        const normal = getNormal(path, car.progress);
+        const cx = point.x + normal.x * car.offset;
+        const cy = point.y + normal.y * car.offset;
+
+        car.el.setAttribute("cx", cx);
+        car.el.setAttribute("cy", cy);
+      });
+
+      // Update positions and get car we're following
+      const followCar = updateLapPositions();
+
+      // Camera follow (scale & pan)
+      if (cameraFollow) {
+        const followPoint = path.getPointAtLength(followCar.progress * pathLength);
+        const centerX = 500, centerY = 300;
+        const scale = zoomLevel;
+
+        const tx = centerX - followPoint.x * scale;
+        const ty = centerY - followPoint.y * scale;
+
+        cameraGroup.setAttribute("transform", `translate(${tx},${ty}) scale(${scale})`);
+      } else {
+        // When camera follow is disabled, zoom out and center the track
+        const scale = 0.8;
+
+        // Center the track in the view
+        const trackBBox = path.getBBox();
+        const trackCenterX = trackBBox.x + trackBBox.width / 2;
+        const trackCenterY = trackBBox.y + trackBBox.height / 2;
+
+        const offsetX = 500 - trackCenterX;
+        const offsetY = 300 - trackCenterY;
+
+        cameraGroup.setAttribute("transform", `translate(${offsetX}, ${offsetY}) scale(${scale})`);
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    toggleButton.addEventListener("click", () => {
+      cameraFollow = !cameraFollow;
+      toggleButton.textContent = cameraFollow ? "Disable Camera Follow" : "Enable Camera Follow";
+      
+      if (cameraFollow) {
+        // Immediate focus on followed car when enabling camera follow
+        focusCamera(followingCarId);
+      }
+    });
+
+    resetButton.addEventListener("click", () => {
+      followingCarId = cars[0].id // Reset to follow the leader
+      // Immediate camera update
+      focusCamera(followingCarId);
+      updateLeaderboard(); // Update active state
+    });
+
+    // Initialize the leaderboard
+    updateLeaderboard();
+    
+    // Start the animation
+    animate();
+  </script>
+</body>
+</html>

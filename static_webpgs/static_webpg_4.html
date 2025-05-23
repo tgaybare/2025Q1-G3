@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ripple & Burst Effects</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: radial-gradient(ellipse at center, #0f2027, #203a43, #2c5364);
+      height: 100vh;
+      font-family: sans-serif;
+    }
+
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight;
+
+  window.addEventListener("resize", () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  const ripples = [];
+  const bursts = [];
+
+  class Ripple {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.radius = 0;
+      this.alpha = 1;
+      this.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+    }
+
+    update() {
+      this.radius += 2;
+      this.alpha -= 0.01;
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.strokeStyle = this.color;
+      ctx.globalAlpha = this.alpha;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    isAlive() {
+      return this.alpha > 0;
+    }
+  }
+
+  class Particle {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.vx = (Math.random() - 0.5) * 8;
+      this.vy = (Math.random() - 0.5) * 8;
+      this.alpha = 1;
+      this.radius = Math.random() * 5 + 2;
+      this.color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      this.alpha -= 0.02;
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = this.alpha;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    isAlive() {
+      return this.alpha > 0;
+    }
+  }
+
+  function animate() {
+    ctx.fillStyle = "rgba(15, 32, 39, 0.15)";
+    ctx.fillRect(0, 0, width, height);
+
+    ripples.forEach((ripple, index) => {
+      ripple.update();
+      ripple.draw();
+      if (!ripple.isAlive()) ripples.splice(index, 1);
+    });
+
+    bursts.forEach((particle, index) => {
+      particle.update();
+      particle.draw();
+      if (!particle.isAlive()) bursts.splice(index, 1);
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  window.addEventListener("mousemove", (e) => {
+    ripples.push(new Ripple(e.clientX, e.clientY));
+  });
+
+  function triggerBurst(x, y) {
+    for (let i = 0; i < 30; i++) {
+      bursts.push(new Particle(x, y));
+    }
+  }
+
+  window.addEventListener("click", (e) => {
+    triggerBurst(e.clientX, e.clientY);
+  });
+
+  window.addEventListener("keydown", (e) => {
+    triggerBurst(Math.random() * width, Math.random() * height);
+  });
+</script>
+</body>
+</html>
