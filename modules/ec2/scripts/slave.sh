@@ -14,6 +14,8 @@ cat > /var/www/html/index.html <<'EOF'
 ${html_content}
 EOF
 
+rm -rf /var/www/html/index.nginx*
+
 if command -v ufw >/dev/null 2>&1; then
     ufw allow 'Nginx HTTP'
     ufw reload

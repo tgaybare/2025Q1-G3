@@ -7,7 +7,7 @@ resource "aws_instance" "this" {
 
     associate_public_ip_address = var.public
     user_data = templatefile(var.user_data_path, {
-        html_content = file("/Users/santiago/Desktop/ITBA/1C2025/CLOUD/static_webpgs/static_webpg_1.html")
+        html_content = file("${path.module}/static_webpgs/static_webpg_1.html")
     })
 
     tags = {
