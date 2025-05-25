@@ -33,6 +33,11 @@ variable "master_security_group_name" {
   default = "ec2-master-sg"
 }
 
+variable "slave_security_group_name" {
+  type = string
+  default = "ec2-slave-sg"
+}
+
 variable "master_instance_name" {
   description = "Name for the master EC2 instance"
   type        = string

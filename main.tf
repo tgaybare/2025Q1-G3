@@ -59,6 +59,7 @@ module "ec2_slave" {
   instance_type       = var.slave_instance_type
   subnet_id           = module.vpc.subnets["subnet_2"].id
   key_name            = var.key_name
+  security_group_ids  = [aws_security_group.ec2_slave.id]
   instance_name       = var.slave_instance_name
   public              = module.vpc.subnets["subnet_2"].public
   user_data_path      = "${path.module}/modules/ec2/scripts/slave.sh"
@@ -127,5 +128,38 @@ resource "aws_security_group" "ec2_master" {
 
   tags = {
     Name = var.master_security_group_name
+  }
+}
+
+resource "aws_security_group" "ec2_slave" {
+  name        = var.slave_security_group_name
+  description = "allow incoming ssh connections"
+  vpc_id      = module.vpc.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow incoming SSH connections (Linux)"
+  }
+  
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow incoming HTTP connections"
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = var.slave_security_group_name
   }
 }
