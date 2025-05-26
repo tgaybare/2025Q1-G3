@@ -2,42 +2,31 @@
 ###                VPC                ###
 #########################################
 
-module "vpc" {
+module "vpc_master" {
   source   = "./modules/vpc"
   vpc_cidr = var.vpc_cidr
-  vpc_name = "Prueba module vpc"
+  vpc_name = var.vpc_name
   subnets = [
     {
-      cidr_block        = var.subnet1_cidr
-      availability_zone = "us-east-1a"
-      name              = "subnet_1"
+      cidr_block        = var.subnet_master_cidr
+      availability_zone = var.subnet_master_az
+      name              = var.subnet_master_name
       public            = true
     },
     {
-      cidr_block        = var.subnet2_cidr
-      availability_zone = "us-east-1b"
-      name              = "subnet_2"
-      public            = true
-    },
-    {
-      cidr_block        = var.subnet3_cidr
-      availability_zone = "us-east-1c"
-      name              = "subnet_3"
+      cidr_block        = var.subnet_rds_cidr_1
+      availability_zone = var.subnet_rds_az_1
+      name              = var.subnet_rds_name_1
       public            = false
     },
     {
-      cidr_block        = var.subnet4_cidr
-      availability_zone = "us-east-1a"
-      name              = "subnet_4"
+      cidr_block        = var.subnet_rds_cidr_2
+      availability_zone = var.subnet_rds_az_2
+      name              = var.subnet_rds_name_2
       public            = false
-    },
+    }
   ]
 }
-
-#########################################
-###            ROUTE TABLE            ###
-#########################################
-
 
 #########################################
 ###           EC2 Instance            ###
@@ -45,26 +34,14 @@ module "vpc" {
 
 module "ec2_master" {
   source              = "./modules/ec2"
-  instance_type       = var.master_instance_type
-  subnet_id           = module.vpc.subnets["subnet_1"].id
-  key_name            = var.key_name
+  instance_type       = var.master_server_instance_type
+  subnet_id           = module.vpc_master.subnets[var.subnet_master_name].id
+  key_name            = aws_key_pair.ec2.key_name
   security_group_ids  = [aws_security_group.ec2_master.id]
-  instance_name       = var.master_instance_name
-  public              = module.vpc.subnets["subnet_1"].public
-  user_data_path      = "${path.module}/modules/ec2/scripts/master.sh"
+  instance_name       = var.master_server_name
+  public              = module.vpc_master.subnets[var.subnet_master_name].public
+  user_data_path      = var.master_server_user_data_path
 }
-
-module "ec2_slave" {
-  source              = "./modules/ec2"
-  instance_type       = var.slave_instance_type
-  subnet_id           = module.vpc.subnets["subnet_2"].id
-  key_name            = var.key_name
-  security_group_ids  = [aws_security_group.ec2_slave.id]
-  instance_name       = var.slave_instance_name
-  public              = module.vpc.subnets["subnet_2"].public
-  user_data_path      = "${path.module}/modules/ec2/scripts/slave.sh"
-}
-
 
 
 #########################################
@@ -77,7 +54,7 @@ resource "tls_private_key" "ec2" {
 }
 # Create the Key Pair
 resource "aws_key_pair" "ec2" {
-  key_name   = var.key_name
+  key_name   = var.master_server_key_name
   public_key = tls_private_key.ec2.public_key_openssh
 }
 # Save file
@@ -93,7 +70,7 @@ resource "local_file" "ssh_key" {
 resource "aws_security_group" "ec2_master" {
   name        = var.master_security_group_name
   description = "allow incoming ssh connections"
-  vpc_id      = module.vpc.id
+  vpc_id      = module.vpc_master.id
 
   ingress {
     from_port   = 22
@@ -131,25 +108,18 @@ resource "aws_security_group" "ec2_master" {
   }
 }
 
-resource "aws_security_group" "ec2_slave" {
-  name        = var.slave_security_group_name
-  description = "allow incoming ssh connections"
-  vpc_id      = module.vpc.id
+
+resource "aws_security_group" "rds-ec2-1" {
+  name        = "rds-ec2-master"
+  description = "Security group for RDS to allow access from EC2 master"
+  vpc_id      = module.vpc_master.id
 
   ingress {
-    from_port   = 22
-    to_port     = 22
+    from_port   = 3306
+    to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow incoming SSH connections (Linux)"
-  }
-  
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow incoming HTTP connections"
+    security_groups = [aws_security_group.ec2_master.id]
+    description = "Allow MySQL access from EC2 master"
   }
 
   egress {
@@ -160,6 +130,34 @@ resource "aws_security_group" "ec2_slave" {
   }
 
   tags = {
-    Name = var.slave_security_group_name
+    Name = "rds-ec2-master"
   }
 }
+
+
+
+#########################################
+###           RDS instance            ###
+#########################################
+
+module "rds" {
+  source = "./modules/rds"
+  db_name = var.db_name
+  db_username = var.db_username
+  db_password = var.db_password
+  db_instance_class = var.db_instance_class
+  db_allocated_storage = var.db_allocated_storage
+  db_engine_version = var.db_engine_version
+  vpc_security_group_ids = [aws_security_group.rds-ec2-1.id]
+  multi_az = var.multi_az
+  publicly_accessible = var.publicly_accessible
+  backup_retention_period = var.backup_retention_period
+  maintenance_window = var.maintenance_window
+  subnet_ids = [
+    module.vpc_master.subnets[var.subnet_rds_name_1].id,
+    module.vpc_master.subnets[var.subnet_rds_name_2].id
+    ]
+}
+
+
+

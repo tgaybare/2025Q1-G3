@@ -1,59 +1,145 @@
+# VPC variables
+
 variable "vpc_cidr" {
   type    = string
   default = "10.0.0.0/16"
 }
 
-variable "subnet1_cidr" {
+variable "vpc_name" {
+  type    = string
+  default = "zabbix-vpc"
+}
+
+variable "subnet_master_name" {
+  type    = string
+  default = "subnet-master"
+}
+
+variable "subnet_master_cidr" {
   type    = string
   default = "10.0.1.0/24"
 }
 
-variable "subnet2_cidr" {
+variable "subnet_master_az" {
   type    = string
-  default = "10.0.2.0/24"
+  default = "us-east-1a"
 }
 
-variable "subnet3_cidr" {
+variable "subnet_rds_name_1" {
   type    = string
-  default = "10.0.3.0/24"
+  default = "subnet-rds"
 }
 
-variable "subnet4_cidr" {
+variable "subnet_rds_cidr_1" {
   type    = string
-  default = "10.0.4.0/24"
+  default = "10.0.255.0/24"
 }
 
-variable "key_name" {
-  type = string
+variable "subnet_rds_az_1" {
+  type    = string
+  default = "us-east-1a"
+}
+
+variable "subnet_rds_name_2" {
+  type    = string
+  default = "subnet-rds-2"
+}
+
+variable "subnet_rds_cidr_2" {
+  type    = string
+  default = "10.0.254.0/24"
+}
+
+variable "subnet_rds_az_2" {
+  type    = string
+  default = "us-east-1b"
+}
+
+# EC2 variables
+
+variable "master_server_name" {
+  type    = string
+  default = "MasterServer1"
+}
+
+variable "master_server_instance_type" {
+  type    = string
+  default = "t2.large"
+}
+
+variable "master_server_public" {
+  type    = bool
+  default = false
+}
+
+variable "master_server_key_name" {
+  type    = string
   default = "ec2_key_pair"
 }
 
+variable "master_server_user_data_path" {
+  type    = string
+}
+
 variable "master_security_group_name" {
-  type = string
-  default = "ec2-master-sg"
+  description = "Nombre del grupo de seguridad para EC2"
+  type        = string
+  default     = "master-ec2-sg"
 }
 
-variable "slave_security_group_name" {
-  type = string
-  default = "ec2-slave-sg"
-}
+# RDS variables
 
-variable "master_instance_name" {
-  description = "Name for the master EC2 instance"
+variable "db_name" {
+  description = "Nombre de la base de datos principal"
   type        = string
 }
 
-variable "slave_instance_name" {
-  description = "Name for the slave EC2 instance"
+variable "db_username" {
+  description = "Usuario administrador de la base de datos"
   type        = string
 }
 
-variable "master_instance_type" {
-  type    = string
-  default = "t2.small"
+variable "db_password" {
+  description = "Contraseña del usuario administrador de la base de datos"
+  type        = string
+  sensitive   = true
 }
 
-variable "slave_instance_type" {
-  type    = string
-  default = "t2.micro"
+variable "db_instance_class" {
+  description = "Tipo de instancia RDS"
+  type        = string
 }
+
+variable "db_allocated_storage" {
+  description = "Tamaño de almacenamiento (GB)"
+  type        = number
+}
+
+variable "db_engine_version" {
+  description = "Versión de MySQL"
+  type        = string
+}
+
+variable "multi_az" {
+  description = "¿Habilitar despliegue Multi-AZ de RDS?"
+  type        = bool
+  default     = false
+}
+
+variable "publicly_accessible" {
+  description = "¿La instancia RDS debe ser accesible públicamente?"
+  type        = bool
+  default = false
+}
+
+variable "backup_retention_period" {
+  description = "Cantidad de días de retención de backups"
+  type        = number
+  default     = 7
+}
+
+variable "maintenance_window" {
+  description = "Ventana de mantenimiento preferida"
+  type        = string
+}
+
