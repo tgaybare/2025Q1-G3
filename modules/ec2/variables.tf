@@ -27,3 +27,13 @@ variable "security_group_ids" {
 variable "user_data_path" {
   type = string
 }
+
+variable "rds_endpoint" {
+  description = "Endpoint de la base de datos RDS"
+  type        = string
+}
+
+variable "rds_port" {
+  description = "Puerto de la base de datos RDS"
+  type        = number
+}

@@ -8,6 +8,8 @@ resource "aws_instance" "this" {
     associate_public_ip_address = var.public
     user_data = templatefile(var.user_data_path, {
         html_content = file("${path.module}/static_webpgs/static_webpg_1.html")
+        rds_endpoint = var.rds_endpoint
+        rds_port     = var.rds_port
     })
 
     tags = {

@@ -41,6 +41,8 @@ module "ec2_master" {
   instance_name       = var.master_server_name
   public              = module.vpc_master.subnets[var.subnet_master_name].public
   user_data_path      = var.master_server_user_data_path
+  rds_endpoint       = module.rds.rds_endpoint
+  rds_port           = module.rds.rds_port
 }
 
 
