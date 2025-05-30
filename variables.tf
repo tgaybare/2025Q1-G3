@@ -143,3 +143,10 @@ variable "maintenance_window" {
   type        = string
 }
 
+variable "lambda_names" {
+  type = list(string)
+}
+
+variable "api_folder" {
+    type = string
+}

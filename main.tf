@@ -161,5 +161,25 @@ module "rds" {
     ]
 }
 
+locals {
+  lambda_names = var.lambda_names
+}
 
+module "lambda" {
+  for_each = toset(local.lambda_names)
 
+  source = "./modules/lambda"
+  name = each.key
+  ec2_master_ip = module.ec2_master.public_ip
+  api_folder = var.api_folder
+}
+
+module "apigw" {
+  for_each = module.lambda
+
+  source = "./modules/api_gw"
+  name = each.key
+  lambda_arn = each.value.arn
+
+  depends_on = [module.lambda]
+}
