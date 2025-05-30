@@ -161,6 +161,10 @@ module "rds" {
     ]
 }
 
+#########################################
+###             LAMBDAS               ###
+#########################################
+
 locals {
   lambda_names = var.lambda_names
 }
@@ -173,6 +177,10 @@ module "lambda" {
   ec2_master_ip = module.ec2_master.public_ip
   api_folder = var.api_folder
 }
+
+#########################################
+###              API GW               ###
+#########################################
 
 module "apigw" {
   for_each = module.lambda
