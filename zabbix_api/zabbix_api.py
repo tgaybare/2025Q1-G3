@@ -1,9 +1,9 @@
+import os
 from pyzabbix import ZabbixAPI
 from datetime import datetime
-import matplotlib.pyplot as plt
 
 # === CONFIGURATION ===
-ZABBIX_URL = 'http://52.201.107.148/zabbix'
+ZABBIX_URL = os.getenv('ZABBIX_URL')
 USERNAME = 'Admin'
 PASSWORD = 'zabbix'
 HOST_NAME = 'Zabbix server'
