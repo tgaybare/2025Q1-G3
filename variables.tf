@@ -143,6 +143,9 @@ variable "maintenance_window" {
   type        = string
 }
 
+variable "lambda_names" {
+  type = list(string)
+}
 #S3 variables
 
 variable "react_app_bucket_name" {
@@ -172,4 +175,8 @@ variable "hosts_table_name" {
   description = "Nombre de la tabla de hosts en DynamoDB"
   type        = string
   default     = "hosts"
+}
+
+variable "api_folder" {
+    type = string
 }
