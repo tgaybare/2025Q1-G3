@@ -246,5 +246,4 @@ module "lambda_functions" {
   users_table_name  = var.users_table_name
   hosts_table_name  = var.hosts_table_name
   api_gateway_id = module.api_gateway.api_gateway_id
-  lambda_execution_role_arn = var.lambda_execution_role_arn
 }

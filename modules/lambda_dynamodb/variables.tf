@@ -28,8 +28,4 @@ variable "api_gateway_id" {
   type        = string
 }
 
-variable "lambda_execution_role_arn" {
-  description = "IAM role ARN to be assumed by Lambda"
-  type        = string
-}
 

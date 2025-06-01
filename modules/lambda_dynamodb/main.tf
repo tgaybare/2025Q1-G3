@@ -3,6 +3,10 @@ resource "aws_iam_role" "lambda_execution_role" {
   assume_role_policy = "{}" # Dummy policy para evitar error de sintaxis
 }
 
+data "aws_iam_role" "lab_role" {
+  name = "LabRole"
+}
+
 # Empaquetado del código Lambda
 data "archive_file" "get_user_by_id_zip" {
   type        = "zip"
@@ -37,7 +41,7 @@ resource "aws_lambda_function" "get_user_by_id" {
   runtime          = "python3.9"
   timeout          = 30
   memory_size      = 128
-  role = var.lambda_execution_role_arn
+  role = data.aws_iam_role.lab_role.arn
 
   environment {
     variables = {
@@ -54,7 +58,7 @@ resource "aws_lambda_function" "get_user_by_email" {
   runtime          = "python3.9"
   timeout          = 30
   memory_size      = 128
-  role = var.lambda_execution_role_arn
+  role = data.aws_iam_role.lab_role.arn
 
   environment {
     variables = {
@@ -71,9 +75,10 @@ resource "aws_lambda_function" "get_hosts_by_user_id" {
   runtime          = "python3.9"
   timeout          = 30
   memory_size      = 128
-  role = var.lambda_execution_role_arn
+  role = data.aws_iam_role.lab_role.arn
 
-  environment {
+
+environment {
     variables = {
       HOSTS_TABLE_NAME = var.hosts_table_name
     }
@@ -88,7 +93,7 @@ resource "aws_lambda_function" "get_host_by_id" {
   runtime          = "python3.9"
   timeout          = 30
   memory_size      = 128
-  role = var.lambda_execution_role_arn
+  role = data.aws_iam_role.lab_role.arn
 
   environment {
     variables = {
