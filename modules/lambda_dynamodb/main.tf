@@ -37,7 +37,7 @@ resource "aws_lambda_function" "get_user_by_id" {
   runtime          = "python3.9"
   timeout          = 30
   memory_size      = 128
-  role = "arn:aws:iam::486520349425:role/LabRole"
+  role = var.lambda_execution_role_arn
 
   environment {
     variables = {
@@ -54,7 +54,7 @@ resource "aws_lambda_function" "get_user_by_email" {
   runtime          = "python3.9"
   timeout          = 30
   memory_size      = 128
-  role = "arn:aws:iam::486520349425:role/LabRole"
+  role = var.lambda_execution_role_arn
 
   environment {
     variables = {
@@ -71,7 +71,7 @@ resource "aws_lambda_function" "get_hosts_by_user_id" {
   runtime          = "python3.9"
   timeout          = 30
   memory_size      = 128
-  role = "arn:aws:iam::486520349425:role/LabRole"
+  role = var.lambda_execution_role_arn
 
   environment {
     variables = {
@@ -88,7 +88,7 @@ resource "aws_lambda_function" "get_host_by_id" {
   runtime          = "python3.9"
   timeout          = 30
   memory_size      = 128
-  role = "arn:aws:iam::486520349425:role/LabRole"
+  role = var.lambda_execution_role_arn
 
   environment {
     variables = {

@@ -180,3 +180,8 @@ variable "hosts_table_name" {
 variable "api_folder" {
     type = string
 }
+
+variable "lambda_execution_role_arn" {
+  description = "IAM role ARN to be assumed by Lambda"
+  type        = string
+}
