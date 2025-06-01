@@ -143,3 +143,15 @@ variable "maintenance_window" {
   type        = string
 }
 
+#S3 variables
+
+variable "react_app_bucket_name" {
+  description = "S3 bucket name for React app"
+  type        = string
+  default     = "react-app-bucket"
+}
+
+variable "react_app_bucket_region" {
+  description = "Region for React app S3 bucket"
+  type        = string
+}

@@ -161,5 +161,16 @@ module "rds" {
     ]
 }
 
+#########################################
+###            S3 Bucket              ###
+#########################################
+
+module "react_app_bucket" {
+  source = "./modules/s3"
+
+  bucket_name   = var.react_app_bucket_name
+  bucket_region = var.react_app_bucket_region
+}
+
 
 
