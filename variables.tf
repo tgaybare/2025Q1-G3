@@ -146,12 +146,30 @@ variable "maintenance_window" {
 #S3 variables
 
 variable "react_app_bucket_name" {
-  description = "S3 bucket name for React app"
+  description = "Nombre del bucket S3 con la app React"
   type        = string
   default     = "react-app-bucket"
 }
 
 variable "react_app_bucket_region" {
-  description = "Region for React app S3 bucket"
+  description = "Region para el Bucket S3 con la app React"
   type        = string
+}
+
+variable "aws_region" {
+  description = "Región de AWS donde se desplegarán los recursos"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "users_table_name" {
+  description = "Nombre de la tabla de usuarios en DynamoDB"
+  type        = string
+  default     = "users"
+}
+
+variable "hosts_table_name" {
+  description = "Nombre de la tabla de hosts en DynamoDB"
+  type        = string
+  default     = "hosts"
 }
