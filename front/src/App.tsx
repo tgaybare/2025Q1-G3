@@ -1,34 +1,18 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from 'react-router-dom';
-import Login from './pages/login';
-import Dashboard from './pages/dashboard';
-import React from 'react';
-import { Amplify } from 'aws-amplify';
-import { withAuthenticator } from '@aws-amplify/ui-react';
+// App.js
 
-Amplify.configure({
-  Auth: {
-    region: 'us-east-1', // your region
-    userPoolId: 'us-east-1_XXXXXXXXX',
-    userPoolWebClientId: 'xxxxxxxxxxxxxxxxxxxxxxxxxx',
-    authenticationFlowType: 'USER_PASSWORD_AUTH',
-  },
-});
+import {Route, BrowserRouter, Routes} from "react-router-dom";
+import {HomePage} from "../pages/Home";
+import {DashboardPage} from "../pages/Dashboard";
 
-function App({ signOut, user }: any) {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/" element={<Navigate to="/login" />} />
-      </Routes>
-    </Router>
-  );
+function App() {
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+            </Routes>
+        </BrowserRouter>
+    );
 }
 
-export default withAuthenticator(App);
+export default App;
