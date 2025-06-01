@@ -25,8 +25,7 @@ zapi.login(USERNAME, PASSWORD)
 def get_host_by_ip(ip):
     host_id = zapi.host.get(filter={"ip": [ip]}, output=["hostid", "host"])
     if not host_id:
-        print(f"❌ Host '{ip}' not found.")
-        exit(1)
+        return {'statusCode': 404, 'body': f"Host with IP {ip} not found."}
     return host_id[0]['hostid']
 
 def get_metric_id(metric_key, host_id):
@@ -60,7 +59,14 @@ def get_history_by_metric(item_id, history_type, limit):
 def get_metrics_handler(event, context):
     params = event.get('queryStringParameters', {})
     host_ip = params.get('host_ip', '')
+    if not host_ip:
+        return {
+            'statusCode': 400,
+            'body': 'Missing host_ip parameter'
+        }
     host_id_by_ip = get_host_by_ip(host_ip)
+    if isinstance(host_id_by_ip, dict) and 'statusCode' in host_id_by_ip:
+        return host_id_by_ip
     metrics = {}
 
     for metric, key in METRIC_KEYS.items():
