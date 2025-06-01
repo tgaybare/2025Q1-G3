@@ -143,3 +143,20 @@ variable "maintenance_window" {
   type        = string
 }
 
+variable "aws_region" {
+  description = "Región de AWS donde se desplegarán los recursos"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "users_table_name" {
+  description = "Nombre de la tabla de usuarios en DynamoDB"
+  type        = string
+  default     = "users"
+}
+
+variable "hosts_table_name" {
+  description = "Nombre de la tabla de hosts en DynamoDB"
+  type        = string
+  default     = "hosts"
+}

@@ -161,5 +161,46 @@ module "rds" {
     ]
 }
 
+#########################################
+###             DynamoDb              ###
+#########################################
 
+module "dynamodb" {
+  source = "./modules/dynamodb"
 
+  aws_region        = var.aws_region
+  environment       = "prod"
+  users_table_name  = var.users_table_name
+  hosts_table_name  = var.hosts_table_name
+  
+}
+
+#########################################
+###            Api-gateway            ###
+#########################################
+
+# Módulo API Gateway
+module "api_gateway" {
+  source = "./modules/api_gw_dynamodb"
+
+  aws_region        = var.aws_region
+  environment       = "prod"
+  lambda_functions  = module.lambda_functions.functions
+  users_table_name  = var.users_table_name
+  hosts_table_name  = var.hosts_table_name
+}
+
+#########################################
+###             Lambda                ###
+#########################################
+
+# Módulo Lambda Functions
+module "lambda_functions" {
+  source = "./modules/lambda_dynamodb"
+  api_gateway_arn = module.api_gateway.api_gateway_arn
+  aws_region        = var.aws_region
+  environment       = "prod"
+  users_table_name  = var.users_table_name
+  hosts_table_name  = var.hosts_table_name
+  api_gateway_id = module.api_gateway.api_gateway_id
+}
