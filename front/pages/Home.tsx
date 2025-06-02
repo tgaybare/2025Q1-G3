@@ -5,7 +5,7 @@ export function HomePage() {
     const auth = useAuth();
 
     const signOutRedirect = () => {
-        const clientId = "539qi4hbt6km9hd52u1mhrvl24";
+        const clientId = "4n6ubup1slfbd4u1j0qns8i2r7";
         const logoutUri = "<logout uri>";
         const cognitoDomain = "https://<user pool domain>";
         window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;

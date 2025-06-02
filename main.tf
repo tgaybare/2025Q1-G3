@@ -247,3 +247,22 @@ module "lambda_functions" {
   hosts_table_name  = var.hosts_table_name
   api_gateway_id = module.api_gateway.api_gateway_id
 }
+
+#########################################
+###             Cognito               ###
+#########################################
+
+module "cognito" {
+  source          = "./modules/cognito"
+  user_pool_name  = "dashboard-user-pool"
+  app_client_name = "dashboard-app-client"
+  domain_prefix   = "dashboard-cognito-demo"
+  domain      = "dashboard-cognito-demo.example.com"
+
+  callback_urls = [
+    "https://your-api-id.execute-api.us-east-1.amazonaws.com/prod/callback"
+  ]
+  logout_urls = [
+    "https://your-app.s3-website.us-east-1.amazonaws.com/logout"
+  ]
+}
