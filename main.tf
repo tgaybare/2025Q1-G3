@@ -170,10 +170,12 @@ locals {
 }
 
 module "lambda" {
-  for_each = toset(local.lambda_names)
+  for_each = local.lambda_names
 
   source = "./modules/lambda"
   name = each.key
+  handler = each.value.handler
+  method = each.value.method
   ec2_master_ip = module.ec2_master.public_ip
   api_folder = var.api_folder
 }
@@ -183,11 +185,12 @@ module "lambda" {
 #########################################
 
 module "apigw" {
-  for_each = module.lambda
+  for_each = var.lambda_names
 
-  source = "./modules/api_gw"
-  name = each.key
-  lambda_arn = each.value.arn
+  source      = "./modules/api_gw"
+  name        = each.key
+  lambda_arn  = module.lambda[each.key].arn
+  method      = each.value.method
 
   depends_on = [module.lambda]
 }

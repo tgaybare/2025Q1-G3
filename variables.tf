@@ -144,7 +144,10 @@ variable "maintenance_window" {
 }
 
 variable "lambda_names" {
-  type = list(string)
+  type = map(object({
+    handler = string
+    method  = string
+  }))
 }
 #S3 variables
 

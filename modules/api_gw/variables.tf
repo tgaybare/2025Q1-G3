@@ -5,3 +5,7 @@ variable "name" {
 variable "lambda_arn" {
     type = string
 }
+
+variable "method" {
+  type = string
+}
