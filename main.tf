@@ -266,3 +266,73 @@ module "cognito" {
     "https://your-app.s3-website.us-east-1.amazonaws.com/logout"
   ]
 }
+
+# Generate .env file with Cognito configuration
+resource "local_file" "env_file" {
+  content = <<-EOT
+REST_API_URL=${module.apigw.get_metrics.url}
+EOT
+
+  filename = "${var.spa_source_dir}/.env"
+  depends_on = [module.apigw, module.react_app_bucket]
+}
+
+
+
+# Copy .env to build directory and rebuild SPA (if needed)
+resource "null_resource" "rebuild_spa" {
+  depends_on = [local_file.env_file]
+
+  triggers = {
+    env_file_content = local_file.env_file.content
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      # Copy .env to project root if it's not already there
+      if [ "${var.spa_source_dir}" != "." ]; then
+        cp ${var.spa_source_dir}/.env .env 2>/dev/null || true
+      fi
+
+      cd ${var.spa_source_dir}
+      npm install
+      npm run build
+    EOT
+  }
+}
+
+# Get all files in the SPA directory
+locals {
+  spa_files = fileset(var.spa_build_dir, "**")
+}
+
+# Upload SPA files to S3
+resource "aws_s3_object" "spa_files" {
+  for_each = local.spa_files
+
+  bucket = module.react_app_bucket.bucket_name
+  key    = each.value
+  source = "${var.spa_build_dir}/${each.value}"
+  etag   = filemd5("${var.spa_build_dir}/${each.value}")
+
+  content_type = lookup({
+    "html" = "text/html"
+    "css"  = "text/css"
+    "js"   = "application/javascript"
+    "json" = "application/json"
+    "png"  = "image/png"
+    "jpg"  = "image/jpeg"
+    "jpeg" = "image/jpeg"
+    "gif"  = "image/gif"
+    "svg"  = "image/svg+xml"
+    "ico"  = "image/x-icon"
+    "woff" = "font/woff"
+    "woff2" = "font/woff2"
+    "ttf"  = "font/ttf"
+    "eot"  = "application/vnd.ms-fontobject"
+  }, reverse(split(".", each.value))[0], "application/octet-stream")
+
+  depends_on = [
+    null_resource.rebuild_spa
+  ]
+}

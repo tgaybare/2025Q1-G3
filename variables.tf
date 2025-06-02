@@ -180,3 +180,15 @@ variable "hosts_table_name" {
 variable "api_folder" {
     type = string
 }
+
+variable "spa_build_dir" {
+  description = "Path to your SPA build directory"
+  type        = string
+  default     = "./front/dist"
+}
+
+variable "spa_source_dir" {
+  description = "Path to your SPA directory"
+  type        = string
+  default     = "./front"
+}
