@@ -34,7 +34,7 @@ resource "aws_cognito_user_pool_domain" "this" {
   domain       = "user-app-login-1235"
   user_pool_id = aws_cognito_user_pool.this.id
 
-  //managed_login_version = 2
+  managed_login_version = 2
 }
 
 /*resource "aws_acm_certificate" "cert" {
