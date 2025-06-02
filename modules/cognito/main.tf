@@ -2,15 +2,30 @@ resource "aws_cognito_user_pool" "this" {
   name = var.user_pool_name
 
   auto_verified_attributes = ["email"]
-
+  username_attributes = ["email"]
   password_policy {
     minimum_length    = 8
     require_lowercase = true
     require_uppercase = true
     require_numbers   = true
-    require_symbols   = true
   }
+  verification_message_template {
+    default_email_option = "CONFIRM_WITH_CODE"
+    email_subject = "Account Confirmation"
+    email_message = "Your confirmation code is {####}"
+  }
+  schema {
+    attribute_data_type      = "String"
+    developer_only_attribute = false
+    mutable                  = true
+    name                     = "email"
+    required                 = true
 
+    string_attribute_constraints {
+      min_length = 1
+      max_length = 256
+    }
+  }
   admin_create_user_config {
     allow_admin_create_user_only = false
   }
@@ -34,27 +49,4 @@ resource "aws_cognito_user_pool_domain" "this" {
   domain       = "user-app-login-1235"
   user_pool_id = aws_cognito_user_pool.this.id
 
-  managed_login_version = 2
 }
-
-/*resource "aws_acm_certificate" "cert" {
-  domain_name       = var.domain
-  validation_method = "DNS"
-
-  tags = {
-    Name = "CognitoDomainCertificate"
-  }
-}*/
-/*resource "aws_cognito_user_pool_ui_customization" "this" {
-  user_pool_id = aws_cognito_user_pool.this.id
-  client_id    = aws_cognito_user_pool_client.this.id
-
-  css         = ""
-  image_file  = null
-}*/
-
-
-/*resource "aws_cognito_user_pool_domain" "this" {
-  domain       = var.domain_prefix
-  user_pool_id = aws_cognito_user_pool.this.id
-}*/
