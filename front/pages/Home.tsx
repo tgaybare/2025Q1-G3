@@ -1,38 +1,14 @@
-import { useAuth } from "react-oidc-context";
 import {Link} from "react-router-dom";
 
 export function HomePage() {
-    const auth = useAuth();
-
-    if (auth.isLoading) {
-        return <div>Loading...</div>;
-    }
-
-    if (auth.error) {
-        return <div>Encountering error... {auth.error.message}</div>;
-    }
-
-    if (auth.isAuthenticated) {
-        return (
-            <div>
-                <h2>Home</h2>
-                <pre> Hello: {auth.user?.profile.email} </pre>
-                <pre> ID Token: {auth.user?.id_token} </pre>
-                <pre> Access Token: {auth.user?.access_token} </pre>
-                <pre> Refresh Token: {auth.user?.refresh_token} </pre>
-
-                <nav>
-                    <Link to="/">Home</Link> | <Link to="/dashboard">Dashboard</Link>
-                </nav>
-
-                <button onClick={() => auth.removeUser()}>Sign out</button>
-            </div>
-        );
-    }
 
     return (
         <div>
-            <button onClick={() => auth.signinRedirect()}>Sign in</button>
+            <button
+                // onClick={() => window.location.href = `${import.meta.env.VITE_COGNITO_HOSTED_UI}?client_id=${import.meta.env.VITE_COGNITO_CLIENT_ID}&response_type=code&scope=openid+profile+email&redirect_uri=${encodeURIComponent(import.meta.env.VITE_REDIRECT_URI)}`}>Sign in
+                onClick={() => window.location.href = `${import.meta.env.VITE_COGNITO_HOSTED_UI}`}>
+                Sign In
+            </button>
         </div>
     );
 }

@@ -14,6 +14,9 @@ resource "aws_lambda_function" "this" {
     environment {
         variables = {
             REDIRECT_BASE_URL = var.redirect_base_url
+            COGNITO_DOMAIN = var.cognito_domain
+            COGNITO_CLIENT_ID = var.cognito_client_id
+            FRONT_REDIRECT_URL = var.front_redirect_url
         }
     }
 }

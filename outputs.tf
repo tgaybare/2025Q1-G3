@@ -34,7 +34,3 @@ output "cognito_user_pool_id" {
 output "cognito_client_id" {
   value = module.cognito.client_id
 }
-
-/*output "cognito_login_url" {
-  value = module.cognito.hosted_ui_url
-}*/

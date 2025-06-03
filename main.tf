@@ -270,6 +270,7 @@ VITE_REDIRECT_URI="${module.apigw.get_metrics.url}/callback"
 VITE_COGNITO_USER_POOL_ID=${module.cognito.user_pool_id}
 VITE_COGNITO_CLIENT_ID=${module.cognito.client_id}
 VITE_AUTHORITY=${module.cognito.vite_authority}
+VITE_COGNITO_HOSTED_UI=${module.cognito.cognito_login_url}
 EOT
 
   filename = "${var.spa_source_dir}/.env"
@@ -345,7 +346,10 @@ module "callback_lambda" {
   source = "./modules/callback_lambda"
   name="callback"
   api_folder = var.api_folder
-  redirect_base_url = module.react_app_bucket.website_url
+  redirect_base_url = module.apigw.get_metrics.url
+  cognito_domain = module.cognito.cognito_domain
+  cognito_client_id = module.cognito.client_id
+  front_redirect_url = module.react_app_bucket.website_url
 }
 
 # and then add it to the API Gateway
