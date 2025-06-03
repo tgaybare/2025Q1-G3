@@ -1,4 +1,7 @@
+import json
 import os
+# import boto3
+import jwt
 from pyzabbix import ZabbixAPI
 from datetime import datetime
 
@@ -11,15 +14,41 @@ LINUX_SERVERS_ID = '2'
 LINUX_ZABBIX_AGENT_ACTIVE_ID = '10343'
 AGENT_INTERFACE_TYPE_ID = 1
 AGENT_PORT = '10050'
+HOSTS_TABLE_NAME = os.getenv('HOSTS_TABLE_NAME')
 
 # === INIT ===
 zapi = ZabbixAPI(ZABBIX_URL)
 zapi.login(USERNAME, PASSWORD)
 print("✅ Logged into Zabbix.")
 
+# dynamodb = boto3.client('dynamodb')
+
 def create_host_handler(event, context):
-    hostname = event.get('hostname', HOST_NAME)
-    ip = event.get('ip', None)
+
+    auth_header = event["headers"].get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return {
+            "statusCode": 401,
+            "body": json.dumps({"error": "Missing or invalid Authorization header"})
+        }
+
+    # Extract and decode JWT (without verification)
+    token = auth_header.split(" ")[1]
+    decoded_token = jwt.decode(token, options={"verify_signature": False})
+    
+    # Extract user info
+    user_email = decoded_token.get("email")
+    user_sub = decoded_token.get("sub")
+    if not user_email or not user_sub:
+        return {
+            "statusCode": 401,
+            "body": json.dumps({"error": "Invalid token, missing user information"})
+        }
+
+
+    body = json.loads(event["body"])
+    hostname = body.get('hostname', None)
+    ip = body.get('ip', None)
     if not ip:
         return {
             "statusCode": 400,
@@ -52,6 +81,17 @@ def create_host_handler(event, context):
         "groups": [{"groupid": LINUX_SERVERS_ID}],
         "templates": [{"templateid": LINUX_ZABBIX_AGENT_ACTIVE_ID}]
     })
+
+    # response = dynamodb.put_item(
+    #     TableName=HOSTS_TABLE_NAME,
+    #     Item={
+    #         'id': {'S': new_host['hostids'][0]},
+    #         'hostname': {'S': hostname},
+    #         'ip': {'S': ip},
+    #         'user_id': {'S': user_sub}
+    #     }
+    # )
+
     return {
         "statusCode": 200,
         "hostid": new_host['hostids'][0], 
