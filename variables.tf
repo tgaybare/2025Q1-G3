@@ -197,6 +197,12 @@ variable "user_pool_name"{
     default = "dashboard-user-pool"
 }
 
+variable "callback_route_key" {
+  description = "API Gateway route key for the callback"
+  type        = string
+  default     = "GET /callback"
+}
+
 variable "app_client_name"{
   type = string
   default = "dashboard-app-client"

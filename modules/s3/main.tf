@@ -48,6 +48,7 @@ resource "aws_s3_bucket_ownership_controls" "this" {
 
 resource "aws_s3_bucket_policy" "public_read" {
   bucket = aws_s3_bucket.this.id
+  depends_on = [aws_s3_bucket_acl.this, aws_s3_bucket_ownership_controls.this, aws_s3_bucket_website_configuration.this, aws_s3_bucket_public_access_block.this]
 
   policy = jsonencode({
     Version = "2012-10-17"
