@@ -10,10 +10,11 @@ variable "method" {
     type = string
 }
 
-variable "ec2_master_ip" {
+variable "api_folder" {
     type = string
 }
 
-variable "api_folder" {
-    type = string
+variable "env_vars" {
+    type = map(string)
+    default = {}
 }

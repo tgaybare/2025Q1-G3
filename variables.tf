@@ -147,8 +147,10 @@ variable "lambda_names" {
   type = map(object({
     handler = string
     method  = string
+    env_vars = list(string)
   }))
 }
+
 #S3 variables
 
 variable "react_app_bucket_name" {

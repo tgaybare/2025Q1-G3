@@ -167,6 +167,11 @@ module "rds" {
 
 locals {
   lambda_names = var.lambda_names
+  env_vars = {
+    "EC2_MASTER_IP"    = module.ec2_master.public_ip
+    "USERS_TABLE_NAME" = var.users_table_name
+    "HOSTS_TABLE_NAME" = var.hosts_table_name
+  }
 }
 
 module "lambda" {
@@ -176,7 +181,9 @@ module "lambda" {
   name = each.key
   handler = each.value.handler
   method = each.value.method
-  ec2_master_ip = module.ec2_master.public_ip
+  env_vars = {
+    for k in each.value.env_vars : k => local.env_vars[k]
+  }
   api_folder = var.api_folder
 }
 
