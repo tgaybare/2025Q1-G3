@@ -172,8 +172,8 @@ locals {
 module "lambda" {
   for_each = toset(local.lambda_names)
 
+  name= each.key
   source = "./modules/lambda"
-  name = each.key
   ec2_master_ip = module.ec2_master.public_ip
   api_folder = var.api_folder
 }
@@ -316,4 +316,27 @@ resource "aws_s3_object" "spa_files" {
   depends_on = [
     null_resource.rebuild_spa
   ]
+}
+
+#########################################
+###             Callback Lambda      ###
+#########################################
+
+module "callback_lambda" {
+
+  source = "./modules/callback_lambda"
+  name="callback"
+  api_folder = var.api_folder
+  redirect_base_url = module.react_app_bucket.website_url
+}
+
+# and then add it to the API Gateway
+
+module "add_callback_route" {
+  source            = "./modules/add_endpoint_apigw"
+  api_id            = module.apigw.get_metrics.api_id
+  api_execution_arn = module.apigw.get_metrics.execution_arn
+  lambda_arn        = module.callback_lambda.lambda_arn
+  lambda_name       = module.callback_lambda.lambda_name
+  route_key         = var.callback_route_key
 }

@@ -192,3 +192,9 @@ variable "spa_source_dir" {
   type        = string
   default     = "./front"
 }
+
+variable "callback_route_key" {
+  description = "API Gateway route key for the callback"
+  type        = string
+  default     = "GET /callback"
+}
