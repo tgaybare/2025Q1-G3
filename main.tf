@@ -271,10 +271,13 @@ module "cognito" {
 resource "local_file" "env_file" {
   content = <<-EOT
 REST_API_URL=${module.apigw.get_metrics.url}
+COGNITO_USER_POOL_ID=${module.cognito.user_pool_id}
+COGNITO_CLIENT_ID=${module.cognito.client_id}
+AUTHORITY=${module.cognito.authority}
 EOT
 
   filename = "${var.spa_source_dir}/.env"
-  depends_on = [module.apigw, module.react_app_bucket]
+  depends_on = [module.apigw, module.react_app_bucket, module.cognito]
 }
 
 
