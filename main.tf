@@ -254,26 +254,22 @@ module "lambda_functions" {
 
 module "cognito" {
   source          = "./modules/cognito"
-  user_pool_name  = "dashboard-user-pool"
-  app_client_name = "dashboard-app-client"
-  domain_prefix   = "dashboard-cognito-demo"
-  domain      = "dashboard-cognito-demo.example.com"
+  user_pool_name  = var.user_pool_name
+  app_client_name = var.app_client_name
 
   callback_urls = [
-    "https://your-api-id.execute-api.us-east-1.amazonaws.com/prod/callback"
-  ]
-  logout_urls = [
-    "https://your-app.s3-website.us-east-1.amazonaws.com/logout"
+    "${module.apigw.get_metrics.url}/callback",
   ]
 }
 
 # Generate .env file with Cognito configuration
 resource "local_file" "env_file" {
   content = <<-EOT
-REST_API_URL=${module.apigw.get_metrics.url}
-COGNITO_USER_POOL_ID=${module.cognito.user_pool_id}
-COGNITO_CLIENT_ID=${module.cognito.client_id}
-AUTHORITY=${module.cognito.authority}
+VITE_REST_API_URL=${module.apigw.get_metrics.url}
+VITE_REDIRECT_URI="${module.apigw.get_metrics.url}/callback"
+VITE_COGNITO_USER_POOL_ID=${module.cognito.user_pool_id}
+VITE_COGNITO_CLIENT_ID=${module.cognito.client_id}
+VITE_AUTHORITY=${module.cognito.vite_authority}
 EOT
 
   filename = "${var.spa_source_dir}/.env"

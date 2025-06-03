@@ -192,3 +192,12 @@ variable "spa_source_dir" {
   type        = string
   default     = "./front"
 }
+variable "user_pool_name"{
+    type = string
+    default = "dashboard-user-pool"
+}
+
+variable "app_client_name"{
+  type = string
+  default = "dashboard-app-client"
+}

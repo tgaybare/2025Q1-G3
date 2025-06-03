@@ -4,13 +4,6 @@ import {Link} from "react-router-dom";
 export function HomePage() {
     const auth = useAuth();
 
-    const signOutRedirect = () => {
-        const clientId = import.meta.env.COGNITO_CLIENT_ID;
-        const logoutUri = "<logout uri>";
-        const cognitoDomain = "https://<user pool domain>";
-        window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
-    };
-
     if (auth.isLoading) {
         return <div>Loading...</div>;
     }
@@ -40,7 +33,6 @@ export function HomePage() {
     return (
         <div>
             <button onClick={() => auth.signinRedirect()}>Sign in</button>
-            <button onClick={() => signOutRedirect()}>Sign out</button>
         </div>
     );
 }
