@@ -1,15 +1,14 @@
 import json
 import os
-# import boto3
+import boto3
 import jwt
 from pyzabbix import ZabbixAPI
-from datetime import datetime
 
 # === CONFIGURATION ===
-ZABBIX_URL = os.getenv('ZABBIX_URL')
+EC2_MASTER_IP = os.getenv('EC2_MASTER_IP')
+ZABBIX_URL = f'http://{EC2_MASTER_IP}/zabbix'
 USERNAME = 'Admin'
 PASSWORD = 'zabbix'
-HOST_NAME = 'Zabbix server'
 LINUX_SERVERS_ID = '2'
 LINUX_ZABBIX_AGENT_ACTIVE_ID = '10343'
 AGENT_INTERFACE_TYPE_ID = 1
@@ -21,7 +20,7 @@ zapi = ZabbixAPI(ZABBIX_URL)
 zapi.login(USERNAME, PASSWORD)
 print("✅ Logged into Zabbix.")
 
-# dynamodb = boto3.client('dynamodb')
+dynamodb = boto3.client('dynamodb')
 
 def create_host_handler(event, context):
 
@@ -82,15 +81,15 @@ def create_host_handler(event, context):
         "templates": [{"templateid": LINUX_ZABBIX_AGENT_ACTIVE_ID}]
     })
 
-    # response = dynamodb.put_item(
-    #     TableName=HOSTS_TABLE_NAME,
-    #     Item={
-    #         'id': {'S': new_host['hostids'][0]},
-    #         'hostname': {'S': hostname},
-    #         'ip': {'S': ip},
-    #         'user_id': {'S': user_sub}
-    #     }
-    # )
+    response = dynamodb.put_item(
+        TableName=HOSTS_TABLE_NAME,
+        Item={
+            'id': {'S': new_host['hostids'][0]},
+            'hostname': {'S': hostname},
+            'ip': {'S': ip},
+            'user_id': {'S': user_email}
+        }
+    )
 
     return {
         "statusCode": 200,
