@@ -375,17 +375,7 @@ resource "null_resource" "rebuild_spa" {
   }
 
   provisioner "local-exec" {
-    command = <<-EOT
-      # Copy .env to project root if it's not already there
-      if [ "${var.spa_source_dir}" != "." ]; then
-        cp ${var.spa_source_dir}/.env .env 2>/dev/null || true
-      fi
-
-      cd ${var.spa_source_dir}
-      npm install
-      npm run build
-    EOT
-    interpreter = ["/bin/bash", "-c"]
+    command = "python ${path.module}/scripts/rebuild_spa.py ${var.spa_source_dir}"
   }
 }
 

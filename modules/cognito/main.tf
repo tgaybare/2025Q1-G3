@@ -55,17 +55,7 @@ resource "aws_cognito_user_pool_domain" "this" {
 
 resource "null_resource" "create_admin_user" {
   provisioner "local-exec" {
-    command = <<EOT
-      aws cognito-idp sign-up \
-        --client-id ${aws_cognito_user_pool_client.this.id} \
-        --username admin@example.com \
-        --password 'Admin123!@#' \
-        --user-attributes Name=email,Value=admin@example.com || true
-
-      aws cognito-idp admin-confirm-sign-up \
-        --user-pool-id ${aws_cognito_user_pool.this.id} \
-        --username admin@example.com || true
-    EOT
+    command = "python ${path.module}/scripts/admin.py ${aws_cognito_user_pool.this.id} ${aws_cognito_user_pool_client.this.id} admin@example.com Admin123!@#"
   }
 
   depends_on = [
