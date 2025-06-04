@@ -52,3 +52,24 @@ resource "aws_cognito_user_pool_domain" "this" {
   domain       = "user-app-login-${random_id.domain_suffix.hex}"
   user_pool_id = aws_cognito_user_pool.this.id
 }
+
+resource "null_resource" "create_admin_user" {
+  provisioner "local-exec" {
+    command = <<EOT
+      aws cognito-idp sign-up \
+        --client-id ${aws_cognito_user_pool_client.this.id} \
+        --username admin@example.com \
+        --password 'Admin123!@#' \
+        --user-attributes Name=email,Value=admin@example.com || true
+
+      aws cognito-idp admin-confirm-sign-up \
+        --user-pool-id ${aws_cognito_user_pool.this.id} \
+        --username admin@example.com || true
+    EOT
+  }
+
+  depends_on = [
+    aws_cognito_user_pool.this,
+    aws_cognito_user_pool_client.this
+  ]
+}
