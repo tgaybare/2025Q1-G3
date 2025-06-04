@@ -185,3 +185,30 @@ variable "hosts_table_name" {
 variable "api_folder" {
     type = string
 }
+
+variable "spa_build_dir" {
+  description = "Path to your SPA build directory"
+  type        = string
+  default     = "./front/dist"
+}
+
+variable "spa_source_dir" {
+  description = "Path to your SPA directory"
+  type        = string
+  default     = "./front"
+}
+variable "user_pool_name"{
+    type = string
+    default = "dashboard-user-pool"
+}
+
+variable "callback_route_key" {
+  description = "API Gateway route key for the callback"
+  type        = string
+  default     = "GET /callback"
+}
+
+variable "app_client_name"{
+  type = string
+  default = "dashboard-app-client"
+}

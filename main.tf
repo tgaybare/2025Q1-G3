@@ -177,8 +177,8 @@ locals {
 module "lambda" {
   for_each = local.lambda_names
 
+  name= each.key
   source = "./modules/lambda"
-  name = each.key
   handler = each.value.handler
   method = each.value.method
   env_vars = {
@@ -237,4 +237,119 @@ module "react_app_bucket" {
 
   bucket_name   = var.react_app_bucket_name
   bucket_region = var.react_app_bucket_region
+}
+
+#########################################
+###             Cognito               ###
+#########################################
+
+module "cognito" {
+  source          = "./modules/cognito"
+  user_pool_name  = var.user_pool_name
+  app_client_name = var.app_client_name
+
+  callback_urls = [
+    "${aws_apigatewayv2_api.http_api.api_endpoint}/callback",
+  ]
+}
+
+# Generate .env file with Cognito configuration
+resource "local_file" "env_file" {
+  content = <<-EOT
+VITE_REST_API_URL=${aws_apigatewayv2_api.http_api.api_endpoint}
+VITE_REDIRECT_URI="${aws_apigatewayv2_api.http_api.api_endpoint}/callback"
+VITE_COGNITO_USER_POOL_ID=${module.cognito.user_pool_id}
+VITE_COGNITO_CLIENT_ID=${module.cognito.client_id}
+VITE_AUTHORITY=${module.cognito.vite_authority}
+VITE_COGNITO_HOSTED_UI=${module.cognito.cognito_login_url}
+EOT
+
+  filename = "${var.spa_source_dir}/.env"
+  depends_on = [module.apigw, module.react_app_bucket, module.cognito]
+}
+
+
+
+# Copy .env to build directory and rebuild SPA (if needed)
+resource "null_resource" "rebuild_spa" {
+  depends_on = [local_file.env_file]
+
+  triggers = {
+    env_file_content = local_file.env_file.content
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      # Copy .env to project root if it's not already there
+      if [ "${var.spa_source_dir}" != "." ]; then
+        cp ${var.spa_source_dir}/.env .env 2>/dev/null || true
+      fi
+
+      cd ${var.spa_source_dir}
+      npm install
+      npm run build
+    EOT
+  }
+}
+
+# Get all files in the SPA directory
+locals {
+  spa_files = fileset(var.spa_build_dir, "**")
+}
+
+# Upload SPA files to S3
+resource "aws_s3_object" "spa_files" {
+  for_each = local.spa_files
+
+  bucket = module.react_app_bucket.bucket_name
+  key    = each.value
+  source = "${var.spa_build_dir}/${each.value}"
+  etag   = filemd5("${var.spa_build_dir}/${each.value}")
+
+  content_type = lookup({
+    "html" = "text/html"
+    "css"  = "text/css"
+    "js"   = "application/javascript"
+    "json" = "application/json"
+    "png"  = "image/png"
+    "jpg"  = "image/jpeg"
+    "jpeg" = "image/jpeg"
+    "gif"  = "image/gif"
+    "svg"  = "image/svg+xml"
+    "ico"  = "image/x-icon"
+    "woff" = "font/woff"
+    "woff2" = "font/woff2"
+    "ttf"  = "font/ttf"
+    "eot"  = "application/vnd.ms-fontobject"
+  }, reverse(split(".", each.value))[0], "application/octet-stream")
+
+  depends_on = [
+    null_resource.rebuild_spa
+  ]
+}
+
+#########################################
+###             Callback Lambda      ###
+#########################################
+
+module "callback_lambda" {
+
+  source = "./modules/callback_lambda"
+  name="callback"
+  api_folder = var.api_folder
+  redirect_base_url = aws_apigatewayv2_api.http_api.api_endpoint
+  cognito_domain = module.cognito.cognito_domain
+  cognito_client_id = module.cognito.client_id
+  front_redirect_url = module.react_app_bucket.website_url
+}
+
+# and then add it to the API Gateway
+
+module "add_callback_route" {
+  source            = "./modules/add_endpoint_apigw"
+  api_id            = aws_apigatewayv2_api.http_api.id
+  api_execution_arn = aws_apigatewayv2_api.http_api.execution_arn
+  lambda_arn        = module.callback_lambda.lambda_arn
+  lambda_name       = module.callback_lambda.lambda_name
+  route_key         = var.callback_route_key
 }
