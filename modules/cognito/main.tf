@@ -55,7 +55,7 @@ resource "aws_cognito_user_pool_domain" "this" {
 
 resource "null_resource" "create_admin_user" {
   provisioner "local-exec" {
-    command = "python3 ${path.module}/scripts/admin.py ${aws_cognito_user_pool.this.id} ${aws_cognito_user_pool_client.this.id} admin@example.com Admin123!@#"
+    command = "python3 ${path.module}/scripts/admin.py ${aws_cognito_user_pool.this.id} ${aws_cognito_user_pool_client.this.id} admin@example.com Admin123!@# ${var.users_table_name}"
   }
 
   depends_on = [
