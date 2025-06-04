@@ -45,6 +45,6 @@ resource "aws_cognito_user_pool_client" "this" {
 }
 
 resource "aws_cognito_user_pool_domain" "this" {
-  domain       = "user-app-login-123fdfd5"
+  domain       = "user-app-login-123fdfdfefef5"
   user_pool_id = aws_cognito_user_pool.this.id
 }

@@ -350,6 +350,8 @@ module "callback_lambda" {
   cognito_domain = module.cognito.cognito_domain
   cognito_client_id = module.cognito.client_id
   front_redirect_url = module.react_app_bucket.website_url
+  users_table_name = var.users_table_name
+  depends_on = [module.dynamodb]
 }
 
 # and then add it to the API Gateway

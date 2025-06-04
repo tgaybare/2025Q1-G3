@@ -17,6 +17,7 @@ resource "aws_lambda_function" "this" {
             COGNITO_DOMAIN = var.cognito_domain
             COGNITO_CLIENT_ID = var.cognito_client_id
             FRONT_REDIRECT_URL = var.front_redirect_url
+            USERS_TABLE_NAME = var.users_table_name
         }
     }
 }

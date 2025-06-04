@@ -21,3 +21,8 @@ variable "cognito_client_id" {
 variable "front_redirect_url" {
     type = string
 }
+
+variable "users_table_name" {
+    type = string
+    default = "users"
+}

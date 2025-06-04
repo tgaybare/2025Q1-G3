@@ -194,7 +194,7 @@ variable "spa_source_dir" {
 }
 variable "user_pool_name"{
     type = string
-    default = "dashboard-user-pool"
+    default = "dashboard-user-poojgfgfjl"
 }
 
 variable "callback_route_key" {
@@ -205,5 +205,5 @@ variable "callback_route_key" {
 
 variable "app_client_name"{
   type = string
-  default = "dashboard-app-client"
+  default = "dashboard-app-clienjjt"
 }
