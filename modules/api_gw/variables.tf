@@ -9,3 +9,7 @@ variable "lambda_arn" {
 variable "method" {
   type = string
 }
+
+variable "api_id" {
+  type = string
+}

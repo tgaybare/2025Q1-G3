@@ -198,8 +198,21 @@ module "apigw" {
   name        = each.key
   lambda_arn  = module.lambda[each.key].arn
   method      = each.value.method
+  api_id      = aws_apigatewayv2_api.http_api.id
 
   depends_on = [module.lambda]
+}
+
+
+resource "aws_apigatewayv2_api" "http_api" {
+  name           = "http-api"
+  protocol_type  = "HTTP"
+}
+
+resource "aws_apigatewayv2_stage" "default" {
+  api_id      = aws_apigatewayv2_api.http_api.id
+  name        = "$default"
+  auto_deploy = true
 }
 #########################################
 ###             DynamoDb              ###
@@ -224,36 +237,4 @@ module "react_app_bucket" {
 
   bucket_name   = var.react_app_bucket_name
   bucket_region = var.react_app_bucket_region
-}
-
-
-#########################################
-###            Api-gateway            ###
-#########################################
-
-
-# Módulo API Gateway
-module "api_gateway" {
-  source = "./modules/api_gw_dynamodb"
-
-  aws_region        = var.aws_region
-  environment       = "prod"
-  lambda_functions  = module.lambda_functions.functions
-  users_table_name  = var.users_table_name
-  hosts_table_name  = var.hosts_table_name
-}
-
-#########################################
-###             Lambda                ###
-#########################################
-
-# Módulo Lambda Functions
-module "lambda_functions" {
-  source = "./modules/lambda_dynamodb"
-  api_gateway_arn = module.api_gateway.api_gateway_arn
-  aws_region        = var.aws_region
-  environment       = "prod"
-  users_table_name  = var.users_table_name
-  hosts_table_name  = var.hosts_table_name
-  api_gateway_id = module.api_gateway.api_gateway_id
 }

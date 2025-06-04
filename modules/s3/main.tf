@@ -7,10 +7,14 @@ provider "aws" {
   region = var.bucket_region
 }
 
+resource "random_id" "bucket_suffix" {
+  byte_length = 3
+}
+
 resource "aws_s3_bucket" "this" {
   provider = aws.s3
 
-  bucket = var.bucket_name
+  bucket = "${var.bucket_name}-${random_id.bucket_suffix.hex}"
   force_destroy = true
 
   tags = {
