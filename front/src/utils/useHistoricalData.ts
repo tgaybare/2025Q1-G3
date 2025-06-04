@@ -1,17 +1,10 @@
 import { useEffect, useState } from 'react';
 
-type HistoricalDataPoint = {
-    time: string;
-    cpu: number;
-    memory: number;
-    processes: number;
-};
-
 export const useHistoricalData = () => {
-    const [data, setData] = useState<HistoricalDataPoint[]>([]);
+    const [data, setData] = useState([]);
 
     useEffect(() => {
-        const initialData: HistoricalDataPoint[] = [];
+        const initialData = [];
         for (let i = 30; i >= 0; i--) {
             const timestamp = new Date(Date.now() - i * 60000);
             initialData.push({

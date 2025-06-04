@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
 import { useHistoricalData } from './../../src/utils/useHistoricalData.ts';
-import { getAlertStatus } from './../../src/utils/getAlertStatus.ts';
-import { Activity as ActivityIcon } from 'lucide-react';
-import { MetricCard } from '../../src/components/MetricCard/index.tsx';
+import { MetricCard } from './../../src/components/MetricCard';
 import { CPUChart } from './../../src/components/CPUChart';
 import { MemoryPieChart } from './../../src/components/MemoryPieChart';
 import { Cpu, MemoryStick, Activity, HardDrive, Server } from 'lucide-react';
 import { HostSelector } from './../../src/components/HostSelector';
 import { HostManager } from './../../src/components/HostManager'; // import path depends on your file structure
-import { AlertSummary } from '../../src/components/AlertSummary/index.tsx';
 
 import './styles.css';
 
 const dummyHostData = {
     "192.168.1.1": {
-        "CPU Utilization": 90,
+        "CPU Utilization": 45.5,
         "Available Memory": 2048,
         "Total Memory": 8192,
         "Free Swap Space": 1024,
@@ -99,44 +96,19 @@ export function Dashboard() {
                 </div>
                 <div className="host-manager-container">
                     <HostManager onAddHost={handleAddHost} />
+
                 </div>
 
                 <div className="metric-grid">
-                    <MetricCard
-                        title="CPU Usage"
-                        value={currentMetrics["CPU Utilization"]}
-                        unit="%"
-                        icon={Cpu}
-                        statusData={getAlertStatus("CPU Utilization", currentMetrics["CPU Utilization"])}
-                    />
-
-                    <MetricCard
-                        title="Memory Usage"
-                        value={usagePercent.toFixed(1)}
-                        unit="%"
-                        icon={MemoryStick}
-                        statusData={getAlertStatus("Available Memory", available, total)}
-                    />
-
-                    <MetricCard
-                        title="Active Processes"
-                        value={currentMetrics["Number of Processes Running"]}
-                        unit="proc"
-                        icon={ActivityIcon}
-                        statusData={getAlertStatus("Number of Processes Running", currentMetrics["Number of Processes Running"])}
-                    />
-                    <MetricCard
-                        title="Free Swap Space"
-                        value={currentMetrics["Free Swap Space"]}
-                        unit="MB"
-                        icon={HardDrive}
-                        statusData={getAlertStatus("Free Swap Space", currentMetrics["Free Swap Space"])}
-                    />
+                <MetricCard title="CPU Usage" value={currentMetrics["CPU Utilization"]} unit="%" icon={Cpu} metric={undefined} />
+                <MetricCard title="Memory Usage" value={usagePercent.toFixed(1)} unit="%" icon={MemoryStick} metric={undefined} />
+                <MetricCard title="Active Processes" value={currentMetrics["Number of Processes Running"]} unit="proc" icon={Activity} metric={undefined} />
+                <MetricCard title="Swap Space" value={currentMetrics["Free Swap Space"]} unit="MB" icon={HardDrive} metric={undefined} />
                 </div>
 
                 <div className="chart-section">
-                    <CPUChart data={historicalData} />
-                    <MemoryPieChart data={memoryPieData} />
+                <CPUChart data={historicalData} />
+                <MemoryPieChart data={memoryPieData} />
                 </div>
             </>
             )}
