@@ -6,3 +6,5 @@ variable "callback_urls" {
 variable "aws_region" {
   default = "us-east-1"
 }
+
+variable "users_table_name" {}
