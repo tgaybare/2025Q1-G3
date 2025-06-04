@@ -385,6 +385,7 @@ resource "null_resource" "rebuild_spa" {
       npm install
       npm run build
     EOT
+    interpreter = ["/bin/bash", "-c"]
   }
 }
 
