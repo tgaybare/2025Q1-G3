@@ -1,25 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import "./styles.css";
-import { CpuIcon, ServerIcon, HardDriveIcon, WifiIcon, BarChartIcon, ActivityIcon } from '../src/icons';
+import { CpuIcon, ServerIcon, HardDriveIcon, WifiIcon, BarChartIcon, ActivityIcon } from '../../src/icons';
 
-const monitoringIcons: MonitoringIcon[] = [
-    { Icon: CpuIcon, label: "CPU", color: "#60A5FA" },
-    { Icon: ServerIcon, label: "Memory", color: "#4ADE80" },
-    { Icon: HardDriveIcon, label: "Storage", color: "#A78BFA" },
-    { Icon: WifiIcon, label: "Network", color: "#FB923C" },
-    { Icon: BarChartIcon, label: "Analytics", color: "#F472B6" },
-];
+// TypeScript declaration for import.meta.env
+interface ImportMetaEnv {
+    readonly VITE_COGNITO_HOSTED_UI: string;
+    // add other env variables here if needed
+}
 
-interface MonitoringIcon {
-    Icon: React.FC;
-    label: string;
-    color: string;
+interface ImportMeta {
+    readonly env: ImportMetaEnv;
 }
 
 export function HomePage() {
-    const [isLoaded, setIsLoaded] = useState(false);
-    const [hoveredIcon, setHoveredIcon] = useState<number | null>(null);
-
     const COMPANY_NAME = "TechMonitor Pro";
     const COGNITO_LOGIN_URL = import.meta.env.VITE_COGNITO_HOSTED_UI;
 
@@ -41,22 +34,13 @@ export function HomePage() {
                 <h1 className="title">{COMPANY_NAME}</h1>
                 <p className="subtitle">Infrastructure Monitoring Dashboard
                 </p>
-
                 <div className="iconsContainer">
-                    {monitoringIcons.map((icon, index) => (
-                        <div
-                            key={index}
-                            className={`icon ${hoveredIcon === index ? 'hovered' : ''}`}
-                            style={{ backgroundColor: hoveredIcon === index ? icon.color : '#f0f0f0' }}
-                            onMouseEnter={() => setHoveredIcon(index)}
-                            onMouseLeave={() => setHoveredIcon(null)}
-                        >
-                            <icon.Icon />
-                            <span>{icon.label}</span>
-                        </div>
-                    ))}
+                    <span className="icon_CPU"><CpuIcon /></span>
+                    <span className="icon_server"><ServerIcon /></span>
+                    <span className="icon_harddrive"><HardDriveIcon /></span>
+                    <span className="icon_wifi"><WifiIcon /></span>
+                    <span className="icon_barchart"><BarChartIcon /></span>
                 </div>
-
                 <button className="loginButton" onClick={handleLoginRedirect}>
                     Start Monitoring
                 </button>

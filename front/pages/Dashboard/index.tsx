@@ -7,12 +7,17 @@ import {
     Activity, Server, AlertTriangle, CheckCircle, XCircle,
     Cpu, MemoryStick, HardDrive
 } from 'lucide-react';
-import './Dashboard.css';
+import "./styles.css";
 
 export function Dashboard() {
-    /*const [currentData, setCurrentData] = useState(null);
-    const [historicalData, setHistoricalData] = useState([]);
-*/
+    type HistoricalDataPoint = {
+        time: string;
+        cpu: number;
+        memory: number;
+        processes: number;
+    };
+    //const [historicalData, setHistoricalData] = useState<HistoricalDataPoint[]>([]);
+
     /*useEffect(() => {
         fetch('api/metrics') // Replace with your actual API endpoint
             .then(response => response.json())

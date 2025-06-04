@@ -103,9 +103,38 @@
     color: #94a3b8;
     font-size: 0.875rem;
 }
+.icon_CPU{
+    transition: color 0.2s;
+    cursor: pointer;
+}
+.icon_server{
+    transition: color 0.2s;
+    cursor: pointer;
+}
+.icon_harddrive{
+    transition: color 0.2s;
+    cursor: pointer;
+}
+.icon_wifi{
+    transition: color 0.2s;
+    cursor: pointer;
+}
+.icon_barcharthover{
+    transition: color 0.2s;
+    cursor: pointer;
+}
 .icon_CPU:hover{
     color: #60A5FA;
 }
 .icon_server:hover{
-    color: #4ADE80;
+    color: #60A5FA;
+}
+.icon_harddrive:hover{
+    color: #A78BFA;
+}
+.icon_wifi:hover{
+    color: #FB923C;
+}
+.icon_barchart:hover{
+    color: #F472B6;
 }

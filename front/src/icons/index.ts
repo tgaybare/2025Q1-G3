@@ -1,3 +1,4 @@
+export { default as ActivityIcon } from './ActivityIcon';
 export { default as CpuIcon } from './CpuIcon';
 export { default as ServerIcon } from './ServerIcon';
 export { default as HardDriveIcon } from './HardDriveIcon';

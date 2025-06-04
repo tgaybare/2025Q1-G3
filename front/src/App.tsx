@@ -1,8 +1,8 @@
 // App.js
 
 import {Route, BrowserRouter, Routes} from "react-router-dom";
-import {HomePage} from "../pages/Home";
-import {Dashboard} from "../pages/Dashboard2";
+import {HomePage} from "../pages/Home/index";
+import {Dashboard} from "../pages/Dashboard/index";
 
 function App() {
     return (
