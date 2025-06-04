@@ -167,14 +167,23 @@ module "rds" {
 
 locals {
   lambda_names = var.lambda_names
+  env_vars = {
+    "EC2_MASTER_IP"    = module.ec2_master.public_ip
+    "USERS_TABLE_NAME" = var.users_table_name
+    "HOSTS_TABLE_NAME" = var.hosts_table_name
+  }
 }
 
 module "lambda" {
-  for_each = toset(local.lambda_names)
+  for_each = local.lambda_names
 
   name= each.key
   source = "./modules/lambda"
-  ec2_master_ip = module.ec2_master.public_ip
+  handler = each.value.handler
+  method = each.value.method
+  env_vars = {
+    for k in each.value.env_vars : k => local.env_vars[k]
+  }
   api_folder = var.api_folder
 }
 
@@ -183,13 +192,27 @@ module "lambda" {
 #########################################
 
 module "apigw" {
-  for_each = module.lambda
+  for_each = var.lambda_names
 
-  source = "./modules/api_gw"
-  name = each.key
-  lambda_arn = each.value.arn
+  source      = "./modules/api_gw"
+  name        = each.key
+  lambda_arn  = module.lambda[each.key].arn
+  method      = each.value.method
+  api_id      = aws_apigatewayv2_api.http_api.id
 
   depends_on = [module.lambda]
+}
+
+
+resource "aws_apigatewayv2_api" "http_api" {
+  name           = "http-api"
+  protocol_type  = "HTTP"
+}
+
+resource "aws_apigatewayv2_stage" "default" {
+  api_id      = aws_apigatewayv2_api.http_api.id
+  name        = "$default"
+  auto_deploy = true
 }
 #########################################
 ###             DynamoDb              ###
@@ -216,38 +239,6 @@ module "react_app_bucket" {
   bucket_region = var.react_app_bucket_region
 }
 
-
-#########################################
-###            Api-gateway            ###
-#########################################
-
-
-# Módulo API Gateway
-module "api_gateway" {
-  source = "./modules/api_gw_dynamodb"
-
-  aws_region        = var.aws_region
-  environment       = "prod"
-  lambda_functions  = module.lambda_functions.functions
-  users_table_name  = var.users_table_name
-  hosts_table_name  = var.hosts_table_name
-}
-
-#########################################
-###             Lambda                ###
-#########################################
-
-# Módulo Lambda Functions
-module "lambda_functions" {
-  source = "./modules/lambda_dynamodb"
-  api_gateway_arn = module.api_gateway.api_gateway_arn
-  aws_region        = var.aws_region
-  environment       = "prod"
-  users_table_name  = var.users_table_name
-  hosts_table_name  = var.hosts_table_name
-  api_gateway_id = module.api_gateway.api_gateway_id
-}
-
 #########################################
 ###             Cognito               ###
 #########################################
@@ -258,15 +249,15 @@ module "cognito" {
   app_client_name = var.app_client_name
 
   callback_urls = [
-    "${module.apigw.get_metrics.url}/callback",
+    "${aws_apigatewayv2_api.http_api.api_endpoint}/callback",
   ]
 }
 
 # Generate .env file with Cognito configuration
 resource "local_file" "env_file" {
   content = <<-EOT
-VITE_REST_API_URL=${module.apigw.get_metrics.url}
-VITE_REDIRECT_URI="${module.apigw.get_metrics.url}/callback"
+VITE_REST_API_URL=${aws_apigatewayv2_api.http_api.api_endpoint}
+VITE_REDIRECT_URI="${aws_apigatewayv2_api.http_api.api_endpoint}/callback"
 VITE_COGNITO_USER_POOL_ID=${module.cognito.user_pool_id}
 VITE_COGNITO_CLIENT_ID=${module.cognito.client_id}
 VITE_AUTHORITY=${module.cognito.vite_authority}
@@ -346,7 +337,7 @@ module "callback_lambda" {
   source = "./modules/callback_lambda"
   name="callback"
   api_folder = var.api_folder
-  redirect_base_url = module.apigw.get_metrics.url
+  redirect_base_url = aws_apigatewayv2_api.http_api.api_endpoint
   cognito_domain = module.cognito.cognito_domain
   cognito_client_id = module.cognito.client_id
   front_redirect_url = module.react_app_bucket.website_url
@@ -358,8 +349,8 @@ module "callback_lambda" {
 
 module "add_callback_route" {
   source            = "./modules/add_endpoint_apigw"
-  api_id            = module.apigw.get_metrics.api_id
-  api_execution_arn = module.apigw.get_metrics.execution_arn
+  api_id            = aws_apigatewayv2_api.http_api.id
+  api_execution_arn = aws_apigatewayv2_api.http_api.execution_arn
   lambda_arn        = module.callback_lambda.lambda_arn
   lambda_name       = module.callback_lambda.lambda_name
   route_key         = var.callback_route_key
