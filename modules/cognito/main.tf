@@ -52,3 +52,14 @@ resource "aws_cognito_user_pool_domain" "this" {
   domain       = "user-app-login-${random_id.domain_suffix.hex}"
   user_pool_id = aws_cognito_user_pool.this.id
 }
+
+resource "null_resource" "create_admin_user" {
+  provisioner "local-exec" {
+    command = "python3 ${path.module}/scripts/admin.py ${aws_cognito_user_pool.this.id} ${aws_cognito_user_pool_client.this.id} admin@example.com Admin123!@#"
+  }
+
+  depends_on = [
+    aws_cognito_user_pool.this,
+    aws_cognito_user_pool_client.this
+  ]
+}

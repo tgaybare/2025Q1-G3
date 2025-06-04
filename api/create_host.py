@@ -21,6 +21,7 @@ zapi.login(USERNAME, PASSWORD)
 print("✅ Logged into Zabbix.")
 
 dynamodb = boto3.client('dynamodb')
+sns = boto3.client('sns')
 
 def create_host_handler(event, context):
 
@@ -80,6 +81,13 @@ def create_host_handler(event, context):
         "groups": [{"groupid": LINUX_SERVERS_ID}],
         "templates": [{"templateid": LINUX_ZABBIX_AGENT_ACTIVE_ID}]
     })
+
+    # Subscribe user to SNS topic
+    response = sns.subscribe(
+        TopicArn=os.environ['SNS_TOPIC_ARN'],
+        Protocol='email',
+        Endpoint=user_email
+    )
 
     response = dynamodb.put_item(
         TableName=HOSTS_TABLE_NAME,

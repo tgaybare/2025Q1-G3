@@ -55,6 +55,40 @@ variable "subnet_rds_az_2" {
   default = "us-east-1b"
 }
 
+variable "subnet_slave_cidr_1" {
+  type    = string
+  default = "10.0.80.0/24"
+}
+
+variable "subnet_slave_az_1" {
+  type    = string
+  default = "us-east-1a"
+}
+
+variable "subnet_slave_name_1" {
+  type    = string
+  default = "subnet-slave-1"
+}
+
+variable "subnet_slave_cidr_2" {
+  type    = string
+  default = "10.0.90.0/24"
+}
+
+variable "subnet_slave_az_2" {
+  type    = string
+  default = "us-east-1b"
+}
+
+variable "subnet_slave_name_2" {
+  type    = string
+  default = "subnet-slave-2"
+}
+
+variable "slave_server_user_data_path" {
+  type = string
+}
+
 # EC2 variables
 
 variable "master_server_name" {
@@ -85,6 +119,42 @@ variable "master_security_group_name" {
   description = "Nombre del grupo de seguridad para EC2"
   type        = string
   default     = "master-ec2-sg"
+}
+
+variable "slave_server_instance_type" {
+  type    = string
+  default = "t2.micro"
+}
+
+variable "slave_server_name_1" {
+  type    = string
+  default = "SlaveServer1"
+}
+
+variable "slave_server_name_2" {
+  type    = string
+  default = "SlaveServer1"
+}
+
+variable "slave_security_group_name" {
+  description = "Nombre del grupo de seguridad para EC2 esclavo"
+  type        = string
+  default     = "slave-ec2-sg"
+}
+
+variable "slave_server_public" {
+  type    = bool
+  default = false
+}
+
+variable "slave_server_key_name" {
+  type    = string
+  default = "ec2_key_pair"
+}
+
+variable "slave_server_html_content" {
+  description = "Contenido HTML para la página de inicio del servidor esclavo"
+  type        = string
 }
 
 # RDS variables
@@ -211,4 +281,10 @@ variable "callback_route_key" {
 variable "app_client_name"{
   type = string
   default = "dashboard-app-clienjjt"
+}
+
+variable "sns_topic_name" {
+  description = "Nombre del SNS Topic para alertas"
+  type        = string
+  default     = "monitoring_alerts"
 }

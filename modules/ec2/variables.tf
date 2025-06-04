@@ -31,9 +31,23 @@ variable "user_data_path" {
 variable "rds_endpoint" {
   description = "Endpoint de la base de datos RDS"
   type        = string
+  default     = ""
 }
 
 variable "rds_port" {
   description = "Puerto de la base de datos RDS"
   type        = number
+  default     = 3306
+}
+
+variable "html_content" {
+  description = "Contenido HTML para la página de inicio del servidor"
+  type        = string
+  default     = "<html><body><h1>Welcome to the EC2 Instance</h1></body></html>"
+}
+
+variable "master_server_ip" {
+  description = "IP del servidor maestro"
+  type        = string
+  default     = ""
 }
