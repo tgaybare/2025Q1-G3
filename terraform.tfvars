@@ -33,6 +33,8 @@ lambda_names = {
     }
 }
 master_server_user_data_path = "./modules/ec2/scripts/master.sh"
+slave_server_user_data_path = "./modules/ec2/scripts/slave.sh"
+slave_server_html_content = "./modules/ec2/static_webpgs/static_webpg_1.html"
 
 db_name                 = "zabbix"
 db_username             = "admin"

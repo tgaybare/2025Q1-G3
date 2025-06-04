@@ -24,7 +24,19 @@ module "vpc_master" {
       availability_zone = var.subnet_rds_az_2
       name              = var.subnet_rds_name_2
       public            = false
-    }
+    },
+    {
+      cidr_block        = var.subnet_slave_cidr_1
+      availability_zone = var.subnet_slave_az_1
+      name              = var.subnet_slave_name_1
+      public            = true
+    },
+    {
+      cidr_block        = var.subnet_slave_cidr_2
+      availability_zone = var.subnet_slave_az_2
+      name              = var.subnet_slave_name_2
+      public            = true
+    },
   ]
 }
 
@@ -43,8 +55,51 @@ module "ec2_master" {
   user_data_path      = var.master_server_user_data_path
   rds_endpoint       = module.rds.rds_endpoint
   rds_port           = module.rds.rds_port
+
+  depends_on = [ 
+    aws_key_pair.ec2,
+    module.vpc_master
+  ]
 }
 
+module "ec2_slaves" {
+  source = "./modules/ec2"
+  for_each = {
+    "slave_1" = {
+      instance_type       = var.slave_server_instance_type
+      subnet_id           = module.vpc_master.subnets[var.subnet_slave_name_1].id
+      instance_name       = var.slave_server_name_1
+      public              = module.vpc_master.subnets[var.subnet_slave_name_1].public
+      user_data_path      = var.slave_server_user_data_path
+      html_content        = var.slave_server_html_content
+      master_server_ip    = module.ec2_master.public_ip
+    }
+    "slave_2" = {
+      instance_type       = var.slave_server_instance_type
+      subnet_id           = module.vpc_master.subnets[var.subnet_slave_name_2].id
+      instance_name       = var.slave_server_name_2
+      public              = module.vpc_master.subnets[var.subnet_slave_name_2].public
+      user_data_path      = var.slave_server_user_data_path
+      html_content        = var.slave_server_html_content
+      master_server_ip    = module.ec2_master.public_ip
+    }
+  }
+
+  instance_type       = each.value.instance_type
+  subnet_id           = each.value.subnet_id
+  key_name            = aws_key_pair.ec2.key_name
+  security_group_ids  = [aws_security_group.ec2_slave.id]
+  instance_name       = each.value.instance_name
+  public              = each.value.public
+  user_data_path      = each.value.user_data_path
+  html_content        = each.value.html_content
+  master_server_ip    = each.value.master_server_ip
+
+  depends_on = [
+    aws_key_pair.ec2,
+    module.ec2_master
+  ]
+}
 
 #########################################
 ###             Key Pair              ###
@@ -136,7 +191,38 @@ resource "aws_security_group" "rds-ec2-1" {
   }
 }
 
+resource "aws_security_group" "ec2_slave" {
+  name        = var.slave_security_group_name
+  description = "allow incoming ssh connections"
+  vpc_id      = module.vpc_master.id
 
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow incoming SSH connections (Linux)"
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow incoming HTTP connections"
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = var.slave_security_group_name
+  }
+}
 
 #########################################
 ###           RDS instance            ###

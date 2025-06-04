@@ -10,6 +10,9 @@ resource "aws_instance" "this" {
         html_content = file("${path.module}/static_webpgs/static_webpg_1.html")
         rds_endpoint = var.rds_endpoint
         rds_port     = var.rds_port
+        master_server_ip = var.master_server_ip
+        html_content = var.html_content
+        hostname = var.instance_name
     })
 
     tags = {
