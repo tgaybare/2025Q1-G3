@@ -1,5 +1,9 @@
+resource "random_id" "domain_suffix" {
+  byte_length = 3
+}
+
 resource "aws_cognito_user_pool" "this" {
-  name = var.user_pool_name
+  name = "${var.user_pool_name}-${random_id.domain_suffix.hex}"
 
   auto_verified_attributes = ["email"]
   username_attributes = ["email"]
@@ -32,7 +36,7 @@ resource "aws_cognito_user_pool" "this" {
 }
 
 resource "aws_cognito_user_pool_client" "this" {
-  name         = var.app_client_name
+  name         = "${var.app_client_name}-${random_id.domain_suffix.hex}"
   user_pool_id = aws_cognito_user_pool.this.id
 
   generate_secret = false
@@ -45,6 +49,6 @@ resource "aws_cognito_user_pool_client" "this" {
 }
 
 resource "aws_cognito_user_pool_domain" "this" {
-  domain       = "user-app-login-123fdfd5"
+  domain       = "user-app-login-${random_id.domain_suffix.hex}"
   user_pool_id = aws_cognito_user_pool.this.id
 }

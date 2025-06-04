@@ -3,6 +3,23 @@ import os
 import requests
 import base64
 import urllib.parse
+import boto3
+from botocore.exceptions import ClientError
+
+USERS_TABLE_NAME = os.getenv('USERS_TABLE_NAME')
+
+dynamodb = boto3.client('dynamodb')
+
+def get_email_from_id_token(id_token: str) -> str:
+
+    try:
+        payload_b64 = id_token.split(".")[1]
+        padding = '=' * (-len(payload_b64) % 4)
+        payload_json = base64.urlsafe_b64decode(payload_b64 + padding)
+        claims = json.loads(payload_json)
+        return claims.get("email", "")
+    except Exception:
+        return ""
 
 def callback_handler(event, context):
     code = event.get('queryStringParameters', {}).get('code')
@@ -39,9 +56,27 @@ def callback_handler(event, context):
         }
 
     tokens = response.json()
-    auth_token = tokens.get('access_token')  # Or 'access_token', as needed
+    id_token = tokens.get('id_token')
+    email = get_email_from_id_token(id_token)
+    auth_token = tokens.get('access_token')
 
     redirect_url = f"{front_redirect_url}/dashboard?authToken={urllib.parse.quote(auth_token)}"
+
+
+    try:
+        response = dynamodb.put_item(
+            TableName=USERS_TABLE_NAME,
+            Item={
+                'email': {'S': email},
+            },
+            ConditionExpression="attribute_not_exists(email)"
+        )
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
+            pass
+        else:
+            raise
+
 
     return {
         "statusCode": 302,

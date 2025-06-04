@@ -12,15 +12,13 @@ resource "aws_lambda_layer_version" "this" {
 resource "aws_lambda_function" "this" {
     function_name = var.name
     role = data.aws_iam_role.lab_role.arn
-    handler = "get_metrics.get_metrics_handler"
+    handler = var.handler
     runtime = "python3.12"
     filename         = "${var.api_folder}/${var.name}.zip"
     source_code_hash = filebase64sha256("${var.api_folder}/${var.name}.zip")
     layers = [aws_lambda_layer_version.this.arn]
 
     environment {
-        variables = {
-            EC2_MASTER_IP = var.ec2_master_ip
-        }
+        variables = var.env_vars
     }
 }
