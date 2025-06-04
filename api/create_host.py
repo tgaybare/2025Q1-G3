@@ -77,12 +77,12 @@ def create_host_handler(event, context):
         "templates": [{"templateid": LINUX_ZABBIX_AGENT_ACTIVE_ID}]
     })
 
-#     # Subscribe user to SNS topic
-#     response = sns.subscribe(
-#         TopicArn=os.environ['SNS_TOPIC_ARN'],
-#         Protocol='email',
-#         Endpoint=user_email
-#     )
+    # Subscribe user to SNS topic
+    response = sns.subscribe(
+        TopicArn=os.environ['SNS_TOPIC_ARN'],
+        Protocol='email',
+        Endpoint=email
+    )
 
     response = dynamodb.put_item(
         TableName=HOSTS_TABLE_NAME,
