@@ -21,8 +21,8 @@ lambda_names = {
         method = "POST"
         env_vars = ["EC2_MASTER_IP", "HOSTS_TABLE_NAME", "SNS_TOPIC_ARN"]
     }
-    get_hosts_by_user_id = {
-        handler = "get_hosts_by_user_id.lambda_handler"
+    get_hosts_by_user_email = {
+        handler = "get_hosts_by_user_email.lambda_handler"
         method = "GET"
         env_vars = ["HOSTS_TABLE_NAME"]
     }

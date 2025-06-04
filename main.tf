@@ -303,6 +303,12 @@ module "apigw" {
 resource "aws_apigatewayv2_api" "http_api" {
   name           = "http-api"
   protocol_type  = "HTTP"
+
+  cors_configuration {
+      allow_origins     = ["*"]
+      allow_methods     = ["OPTIONS", "GET", "POST"]
+      allow_headers     = ["Content-Type", "Authorization"]
+    }
 }
 
 resource "aws_apigatewayv2_stage" "default" {

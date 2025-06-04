@@ -1,6 +1,7 @@
 import os
 from pyzabbix import ZabbixAPI
 from datetime import datetime
+import json
 
 # === CONFIGURATION ===
 EC2_MASTER_IP = os.getenv('EC2_MASTER_IP')
@@ -87,8 +88,8 @@ def get_metrics_handler(event, context):
             }
     return {
         'statusCode': 200,
-        'body': {
+        'body': json.dumps({
             'host_ip': host_ip,
             'metrics': metrics
-        }
+        })
     }

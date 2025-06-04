@@ -60,7 +60,7 @@ def callback_handler(event, context):
     email = get_email_from_id_token(id_token)
     auth_token = tokens.get('access_token')
 
-    redirect_url = f"{front_redirect_url}/dashboard?authToken={urllib.parse.quote(auth_token)}"
+    redirect_url = f"{front_redirect_url}/dashboard?authToken={urllib.parse.quote(auth_token)}&email={urllib.parse.quote(email)}"
 
 
     try:

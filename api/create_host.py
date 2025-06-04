@@ -26,29 +26,19 @@ sns = boto3.client('sns')
 def create_host_handler(event, context):
 
     auth_header = event["headers"].get("Authorization")
+    if not auth_header:
+        auth_header = event["headers"].get("authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
         return {
             "statusCode": 401,
             "body": json.dumps({"error": "Missing or invalid Authorization header"})
         }
 
-    # Extract and decode JWT (without verification)
-    token = auth_header.split(" ")[1]
-    decoded_token = jwt.decode(token, options={"verify_signature": False})
-    
-    # Extract user info
-    user_email = decoded_token.get("email")
-    user_sub = decoded_token.get("sub")
-    if not user_email or not user_sub:
-        return {
-            "statusCode": 401,
-            "body": json.dumps({"error": "Invalid token, missing user information"})
-        }
-
 
     body = json.loads(event["body"])
     hostname = body.get('hostname', None)
     ip = body.get('ip', None)
+    email = body.get('email', None)
     if not ip:
         return {
             "statusCode": 400,
@@ -58,6 +48,11 @@ def create_host_handler(event, context):
         return {
                 "statusCode": 400,
                 "error": "Hostname is required"
+                }
+    if not email:
+            return {
+                    "statusCode": 400,
+                    "error": "Email is required"
                 }
     print(f"Creating host: {hostname} with IP: {ip}")
     # Check if host already exists
@@ -82,12 +77,12 @@ def create_host_handler(event, context):
         "templates": [{"templateid": LINUX_ZABBIX_AGENT_ACTIVE_ID}]
     })
 
-    # Subscribe user to SNS topic
-    response = sns.subscribe(
-        TopicArn=os.environ['SNS_TOPIC_ARN'],
-        Protocol='email',
-        Endpoint=user_email
-    )
+#     # Subscribe user to SNS topic
+#     response = sns.subscribe(
+#         TopicArn=os.environ['SNS_TOPIC_ARN'],
+#         Protocol='email',
+#         Endpoint=user_email
+#     )
 
     response = dynamodb.put_item(
         TableName=HOSTS_TABLE_NAME,
@@ -95,7 +90,7 @@ def create_host_handler(event, context):
             'id': {'S': new_host['hostids'][0]},
             'hostname': {'S': hostname},
             'ip': {'S': ip},
-            'user_id': {'S': user_email}
+            'user_email': {'S': email}
         }
     )
 

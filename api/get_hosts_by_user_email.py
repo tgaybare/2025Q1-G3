@@ -6,15 +6,15 @@ def lambda_handler(event, context):
     dynamodb = boto3.client('dynamodb')
     table_name = os.environ['HOSTS_TABLE_NAME']
     
-    # Obtener el userId desde los query parameters
-    user_id = event['queryStringParameters']['userId']
+    # Obtener el userEmail desde los query parameters
+    user_email = event['queryStringParameters']['userEmail']
     
     try:
         response = dynamodb.query(
             TableName=table_name,
-            IndexName='UserIdIndex',
-            KeyConditionExpression='user_id = :user_id',
-            ExpressionAttributeValues={':user_id': {'S': user_id}}
+            IndexName='UserEmailIndex',
+            KeyConditionExpression='user_email = :user_email',
+            ExpressionAttributeValues={':user_email': {'S': user_email}}
         )
         
         return {
