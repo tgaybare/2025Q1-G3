@@ -161,6 +161,15 @@ module "rds" {
     ]
 }
 
+
+#########################################
+###               SNS                 ###
+#########################################
+module "sns" {
+  source = "./modules/sns"
+  name   = var.sns_topic_name
+}
+
 #########################################
 ###             LAMBDAS               ###
 #########################################
@@ -171,6 +180,7 @@ locals {
     "EC2_MASTER_IP"    = module.ec2_master.public_ip
     "USERS_TABLE_NAME" = var.users_table_name
     "HOSTS_TABLE_NAME" = var.hosts_table_name
+    "SNS_TOPIC_ARN"    = module.sns.sns_topic_arn
   }
 }
 

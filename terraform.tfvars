@@ -19,12 +19,17 @@ lambda_names = {
     create_host = {
         handler = "create_host.create_host_handler"
         method = "POST"
-        env_vars = ["EC2_MASTER_IP", "HOSTS_TABLE_NAME"]
+        env_vars = ["EC2_MASTER_IP", "HOSTS_TABLE_NAME", "SNS_TOPIC_ARN"]
     }
     get_hosts_by_user_id = {
         handler = "get_hosts_by_user_id.lambda_handler"
         method = "GET"
         env_vars = ["HOSTS_TABLE_NAME"]
+    }
+    publish_to_sns = {
+        handler = "publish_to_sns.publish_to_sns_handler"
+        method = "POST"
+        env_vars = ["SNS_TOPIC_ARN", "EC2_MASTER_IP", "HOSTS_TABLE_NAME"]
     }
 }
 master_server_user_data_path = "./modules/ec2/scripts/master.sh"

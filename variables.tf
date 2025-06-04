@@ -212,3 +212,9 @@ variable "app_client_name"{
   type = string
   default = "dashboard-app-clienjjt"
 }
+
+variable "sns_topic_name" {
+  description = "Nombre del SNS Topic para alertas"
+  type        = string
+  default     = "monitoring_alerts"
+}
