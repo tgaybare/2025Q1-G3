@@ -3,25 +3,23 @@ import './styles.css';
 
 export function HostManager({ onAddHost }) {
     const [isFormVisible, setFormVisible] = useState(false);
-    const [hostName, setHostName] = useState('');
-    const [ipAddress, setIpAddress] = useState('');
-    const [zabbixEndpoint, setZabbixEndpoint] = useState('');
+    const [name, setName] = useState('');
+    const [ip, setIp] = useState('');
 
     const handleAdd = () => {
-        if (hostName && ipAddress) {
-            onAddHost({ hostName, ipAddress, zabbixEndpoint });
-            setHostName('');
-            setIpAddress('');
-            setZabbixEndpoint('');
+        if (name && ip) {
+            // Pass the correct object structure to onAddHost
+            onAddHost({ name, ip});
+            setName('');
+            setIp('');
             setFormVisible(false);
         }
     };
 
     const handleCancel = () => {
         setFormVisible(false);
-        setHostName('');
-        setIpAddress('');
-        setZabbixEndpoint('');
+        setName('');
+        setIp('');
     };
 
     return (
@@ -38,20 +36,14 @@ export function HostManager({ onAddHost }) {
                     <input
                         type="text"
                         placeholder="Host Name"
-                        value={hostName}
-                        onChange={(e) => setHostName(e.target.value)}
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                     />
                     <input
                         type="text"
                         placeholder="IP Address"
-                        value={ipAddress}
-                        onChange={(e) => setIpAddress(e.target.value)}
-                    />
-                    <input
-                        type="text"
-                        placeholder="Zabbix Endpoint (optional)"
-                        value={zabbixEndpoint}
-                        onChange={(e) => setZabbixEndpoint(e.target.value)}
+                        value={ip}
+                        onChange={(e) => setIp(e.target.value)}
                     />
                     <div className="host-form-buttons">
                         <button onClick={handleAdd}>Add Host</button>

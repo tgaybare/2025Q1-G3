@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState, useEffect } from 'react';
 import { useHistoricalData } from './../../src/utils/useHistoricalData.ts';
 import { getAlertStatus } from './../../src/utils/getAlertStatus.ts';
 import { Activity as ActivityIcon } from 'lucide-react';
@@ -11,53 +11,133 @@ import { HostManager } from './../../src/components/HostManager'; // import path
 
 import './styles.css';
 
-const dummyHostData = {
-    "192.168.1.1": {
-        "CPU Utilization": 90,
-        "Available Memory": 2048,
-        "Total Memory": 8192,
-        "Free Swap Space": 1024,
-        "Number of Processes Running": 150
-    },
-    "192.168.1.2": {
-        "CPU Utilization": 23.1,
-        "Available Memory": 4096,
-        "Total Memory": 8192,
-        "Free Swap Space": 2048,
-        "Number of Processes Running": 98
-    }
-};
+interface MetricEntry {
+  value: number | null;
+  timestamp: string | null;
+}
+
+interface MetricData {
+  ip: string;
+  // now metrics is an array of strings for display
+  metrics: string[];
+}
 
 export function Dashboard() {
+    const [metrics, setMetrics] = useState<MetricData[]>([]);
+    const [hosts, setHosts] = useState<string[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const authToken = new URLSearchParams(window.location.search).get("authToken");
+    const email = new URLSearchParams(window.location.search).get("email");
+    const apiUrl = import.meta.env.VITE_REST_API_URL;
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    async function fetchData() {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const hostsResponse = await fetch(
+            `${apiUrl}/get_hosts_by_user_email?userEmail=${encodeURIComponent(email ?? "")}`,
+            { headers: { Authorization: `Bearer ${authToken}` } }
+            );
+            if (!hostsResponse.ok) throw new Error("Failed to fetch hosts");
+
+            const hostsData: any[] = await hostsResponse.json();
+            // HostsData might look like: [{ ip: { S: "1.2.3.4" } }, …]
+            const plainHosts: string[] = hostsData.map((h) => h.ip.S);
+            setHosts(plainHosts);
+
+            // 2) For each host, fetch its metrics
+            const metricsData: MetricData[] = [];
+            for (const ip of plainHosts) {
+            const metricsResponse = await fetch(
+                `${apiUrl}/get_metrics?host_ip=${encodeURIComponent(ip)}`,
+                { headers: { Authorization: `Bearer ${authToken}` } }
+            );
+            if (!metricsResponse.ok) throw new Error("Failed to fetch metrics for " + ip);
+
+            const raw = await metricsResponse.json();
+            const metricsObj: Record<string, MetricEntry> = raw.metrics;
+
+            // Convert the metrics object into an array of strings
+            // e.g. [ "CPU Utilization: null", "Available Memory: null", ... ]
+            const metricsArray: string[] = Object.entries(metricsObj).map(
+                ([key, entry]) => `${key}: ${entry.value ?? "N/A"}`
+            );
+
+            metricsData.push({ ip, metrics: metricsArray });
+            }
+
+            setMetrics(metricsData);
+        } catch (err: any) {
+            setError(err.message || "Unknown error");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchData();
+    }, [apiUrl, authToken, email]);
+
+    async function handleCreateHost(newHost: string, newIp: string) {
+        console.log("Creating host:", newHost, newIp);
+        if (!newHost || !newIp) {
+            setError("Host name and IP address are required");
+            return;
+        }
+        try {
+            setError(null);
+            const response = await fetch(`${apiUrl}/create_host`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    ip: newIp,
+                    hostname: newHost,
+                    email: decodeURIComponent(email ?? ""),
+                }),
+            });
+            if (!response.ok) throw new Error("Failed to create host");
+            alert("Host created!");
+
+            await fetchData();
+        } catch (err: any) {
+            setError(err.message || "Unknown error");
+        }
+    }
     const historicalData = useHistoricalData();
-    const [hosts, setHosts] = useState([
-        { name: 'Host 1', ip: '192.168.1.1', zabbix: '' },
-        { name: 'Host 2', ip: '192.168.1.2', zabbix: '' }
-    ]);
     const [selectedHost, setSelectedHost] = useState(() => hosts[0]?.ip || '');
-    
-    const currentMetrics = dummyHostData[selectedHost];
-    const total = currentMetrics["Total Memory"];
-    const available = currentMetrics["Available Memory"];
+    function getMetricValue(metricName: string): number {
+        const match = currentMetrics.find(m => m.startsWith(`${metricName}:`));
+        if (!match) return 0;
+        const parts = match.split(": ");
+        return parseFloat(parts[1]) || 0;
+    }
+
+    const currentMetrics = metrics.find(m => m.ip === selectedHost)?.metrics || [];
+    const total = getMetricValue("Total Memory");
+    const available = getMetricValue("Available Memory");
+
     const used = total - available;
     const usagePercent = (used / total) * 100;
     
+    console.log("Current Metrics:", currentMetrics);
     const memoryPieData = [
         { name: 'Used', value: usagePercent, fill: '#ef4444' },
         { name: 'Available', value: 100 - usagePercent, fill: '#10b981' }
     ];
 
-    const handleAddHost = (newHost) => {
-        setHosts([...hosts, newHost]);
-
-        dummyHostData[newHost.ipAddress] = {
-            "CPU Utilization": 0,
-            "Available Memory": 0,
-            "Total Memory": 8192,
-            "Free Swap Space": 0,
-            "Number of Processes Running": 0
-        };
-    };
+   const handleAddHost = (hostObj: { name: string; ip: string; }) => {
+    handleCreateHost(hostObj.name, hostObj.ip);
+};
 
 
     return (
@@ -87,12 +167,12 @@ export function Dashboard() {
                 {hosts.map((host, idx) => (
                     <div
                     key={idx}
-                    className={`host-card ${selectedHost === host.ip ? 'selected' : ''}`}
-                    onClick={() => setSelectedHost(host.ip)}
+                    className={`host-card ${selectedHost === host ? 'selected' : ''}`}
+                    onClick={() => setSelectedHost(host)}
                     style={{ cursor: 'pointer' }}
                     >
-                    <h2>{host.name}</h2>
-                    <p>{host.ip}</p>
+                    <h2>{host}</h2>
+                    <p>{host}</p>
                     </div>
                 ))}
                 </div>
@@ -102,34 +182,67 @@ export function Dashboard() {
 
                 <div className="metric-grid">
                     <MetricCard
-                        title="CPU Usage"
-                        value={currentMetrics["CPU Utilization"]}
-                        unit="%"
+                        title="CPU Utilization"
+                        value={
+                            getMetricValue("CPU Utilization") > 0
+                                ? getMetricValue("CPU Utilization")
+                                : "No CPU usage"
+                        }
+                        unit={getMetricValue("CPU Utilization") > 0 ? "%" : ""}
                         icon={Cpu}
-                        statusData={getAlertStatus("CPU Utilization", currentMetrics["CPU Utilization"])}
+                        statusData={
+                            getMetricValue("CPU Utilization") > 0
+                                ? getAlertStatus("CPU Utilization", getMetricValue("CPU Utilization"))
+                                : { status: "unknown", color: "#6b7280", icon: ActivityIcon, tooltip: "No CPU usage" }
+                        }
                     />
 
                     <MetricCard
                         title="Memory Usage"
-                        value={usagePercent.toFixed(1)}
-                        unit="%"
+                        value={
+                            usagePercent && usagePercent > 0
+                                ? usagePercent.toFixed(1)
+                                : "No memory usage"
+                        }
+                        unit={usagePercent && usagePercent > 0 ? "%" : ""}
                         icon={MemoryStick}
-                        statusData={getAlertStatus("Available Memory", available, total)}
+                        statusData={
+                            usagePercent && usagePercent > 0
+                                ? getAlertStatus("Available Memory", available, total)
+                                : { status: "unknown", color: "#6b7280", icon: ActivityIcon, tooltip: "No memory usage" }
+                        }
                     />
 
                     <MetricCard
                         title="Active Processes"
-                        value={currentMetrics["Number of Processes Running"]}
-                        unit="proc"
+                        value={
+                            getMetricValue("Active Processes") > 0
+                                ? getMetricValue("Active Processes")
+                                : "No active processes"
+                        }
+                        unit={getMetricValue("Active Processes") > 0 ? "proc" : ""}
                         icon={ActivityIcon}
-                        statusData={getAlertStatus("Number of Processes Running", currentMetrics["Number of Processes Running"])}
+                        statusData={
+                            getMetricValue("Active Processes") > 0
+                                ? getAlertStatus("Active Processes", getMetricValue("Active Processes"))
+                                : { status: "unknown", color: "#6b7280", icon: ActivityIcon, tooltip: "No active processes" }
+                        }
                     />
+
                     <MetricCard
                         title="Free Swap Space"
-                        value={currentMetrics["Free Swap Space"]}
-                        unit="MB"
+                        value={
+                            getMetricValue("Free Swap Space") && getMetricValue("Free Swap Space") > 0
+                                ? getMetricValue("Free Swap Space")
+                                : "No swap space"
+                        }
+                        unit={getMetricValue("Free Swap Space") && getMetricValue("Free Swap Space") > 0 ? "MB" : ""}
                         icon={HardDrive}
-                        statusData={getAlertStatus("Free Swap Space", currentMetrics["Free Swap Space"])}
+                        statusData={
+                            getMetricValue("Free Swap Space") && getMetricValue("Free Swap Space") > 0
+                                ? getAlertStatus("Free Swap Space", getMetricValue("Free Swap Space"))
+                                : { status: "unknown", color: "#6b7280", icon: ActivityIcon, tooltip: "No swap space" }
+                        }
                     />
                 </div>
 

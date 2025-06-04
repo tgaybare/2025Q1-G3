@@ -385,6 +385,7 @@ resource "null_resource" "rebuild_spa" {
 
   provisioner "local-exec" {
     command = "python3 ${path.module}/scripts/rebuild_spa.py ${var.spa_source_dir}"
+    interpreter = ["/bin/bash", "-c"]
   }
 }
 
