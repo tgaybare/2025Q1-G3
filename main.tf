@@ -343,10 +343,13 @@ module "cognito" {
   source          = "./modules/cognito"
   user_pool_name  = var.user_pool_name
   app_client_name = var.app_client_name
+  users_table_name = var.users_table_name
 
   callback_urls = [
     "${aws_apigatewayv2_api.http_api.api_endpoint}/callback",
   ]
+
+  depends_on = [module.dynamodb]
 }
 
 # Generate .env file with Cognito configuration
