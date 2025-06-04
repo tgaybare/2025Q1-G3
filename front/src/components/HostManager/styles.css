@@ -1,0 +1,66 @@
+.add-host-btn {
+    color: #3b82f6;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: medium;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    transition: background-color 0.2s;
+}
+
+.add-host-btn:hover {
+    background-color: rgba(59, 130, 246, 0.3);
+}
+}
+
+.host-form {
+    background-color: #0f172a;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 20px;
+    max-width: 400px;
+}
+
+.host-form h3 {
+    color: white;
+    margin-bottom: 16px;
+}
+
+.host-form input {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 10px;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    background-color: #1e293b;
+    color: white;
+}
+
+.host-form-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.host-form button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.host-form button:first-child {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.host-form .cancel-btn {
+    background-color: #475569;
+    color: white;
+}

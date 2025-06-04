@@ -35,7 +35,13 @@ body {
     margin: 0;
     color: #9ca3af;
 }
-
+.host-manager-container{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
 .live-status {
     display: flex;
     align-items: center;
@@ -150,4 +156,79 @@ body {
     gap: 6px;
     color: #60a5fa;
     font-weight: 500;
+}
+
+.host-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.host-selector select,
+.host-selector input {
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.host-selector button {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.host-list {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.host-card {
+  background-color: #1e293b;
+  padding: 1rem;
+  border-radius: 10px;
+  width: 250px;
+}
+.host-card {
+  background-color: #1e293b;
+  padding: 1rem;
+  border-radius: 10px;
+  width: 250px;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.host-card:hover {
+  border-color: #60a5fa;
+}
+
+.host-card.selected {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+.empty-message {
+  text-align: center;
+  margin-top: 4rem;
+  padding: 2rem;
+  background-color: #0f172a;
+  border-radius: 12px;
+  border: 1px dashed #334155;
+  color: #cbd5e1;
+  animation: fadeIn 0.3s ease;
+}
+
+.empty-message h2 {
+  font-size: 1.5rem;
+  color: #f8fafc;
+  margin-bottom: 0.5rem;
+}
+
+.empty-message p {
+  font-size: 1rem;
+  color: #94a3b8;
 }
