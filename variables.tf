@@ -133,7 +133,7 @@ variable "slave_server_name_1" {
 
 variable "slave_server_name_2" {
   type    = string
-  default = "SlaveServer1"
+  default = "SlaveServer2"
 }
 
 variable "slave_security_group_name" {
