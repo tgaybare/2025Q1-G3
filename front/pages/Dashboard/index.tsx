@@ -113,7 +113,7 @@ export function Dashboard() {
         }
     }
 
-    const [selectedHost, setSelectedHost] = useState(() => hosts[0]?.ip || '');
+    const [selectedHost, setSelectedHost] = useState(() => hosts[0] || '');
     function getMetricValue(metricName: string): number {
         const match = currentMetrics.find(m => m.startsWith(`${metricName}:`));
         if (!match) return 0;
@@ -135,8 +135,8 @@ export function Dashboard() {
     ];
 
    const handleAddHost = (hostObj: { name: string; ip: string; }) => {
-    handleCreateHost(hostObj.name, hostObj.ip);
-};
+        handleCreateHost(hostObj.name, hostObj.ip);
+    };
 
 
     return (

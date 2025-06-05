@@ -6,10 +6,10 @@ export function HostManager({ onAddHost }) {
     const [name, setName] = useState('');
     const [ip, setIp] = useState('');
 
-    const handleAdd = () => {
+    const handleSubmit = (e) => {
+        e.preventDefault();
         if (name && ip) {
-            // Pass the correct object structure to onAddHost
-            onAddHost({ name, ip});
+            onAddHost({ name, ip });
             setName('');
             setIp('');
             setFormVisible(false);
@@ -31,25 +31,27 @@ export function HostManager({ onAddHost }) {
             )}
 
             {isFormVisible && (
-                <div className="host-form">
+                <form className="host-form" onSubmit={handleSubmit} autoComplete="off">
                     <h3>Add New Host</h3>
                     <input
                         type="text"
                         placeholder="Host Name"
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={e => setName(e.target.value)}
+                        required
                     />
                     <input
                         type="text"
                         placeholder="IP Address"
                         value={ip}
-                        onChange={(e) => setIp(e.target.value)}
+                        onChange={e => setIp(e.target.value)}
+                        required
                     />
                     <div className="host-form-buttons">
-                        <button onClick={handleAdd}>Add Host</button>
-                        <button onClick={handleCancel} className="cancel-btn">Cancel</button>
+                        <button type="submit">Add Host</button>
+                        <button type="button" onClick={handleCancel} className="cancel-btn">Cancel</button>
                     </div>
-                </div>
+                </form>
             )}
         </div>
     );
