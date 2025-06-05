@@ -401,7 +401,6 @@ resource "aws_s3_object" "spa_files" {
   bucket = module.react_app_bucket.bucket_name
   key    = each.value
   source = "${var.spa_build_dir}/${each.value}"
-#   etag   = filemd5("${var.spa_build_dir}/${each.value}")
 
   content_type = lookup({
     "html" = "text/html"
