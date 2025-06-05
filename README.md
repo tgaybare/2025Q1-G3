@@ -84,16 +84,25 @@ Permite segmentar y asegurar adecuadamente la infraestructura desplegada.
 
 ## Admin
 
-Se cuenta con una cuenta con las siguientes credenciales
+Se cuenta con una cuenta con las siguientes credenciales para la demo
 email: admin@example.com
 contraseña: Admin123!@#
+
+### Hosts
+No se cuenta con hosts vinculados a dicho usuario, por lo que hay que hacerlo a mano. 
+Para esto se debe usar el botón que dice "Add Host" en la página, y en el campo Host Name 
+se debe poner obligatoriamente el nombre de la ip que se ve en output y la ip correspondiente en el campo IP Address. 
+El output al aplicar terraform apply muestra:
+Outputs:
+Hostname1 = <ip address>
+Hostname2 = <ip address>
+Se debe completar entonces con estos datos.
+Estas ips son las que hostean los slaves, creadas para esta demo.
 
 ## Funciones utilizadas
 - templatefile: Renderiza una plantilla utilizando un mapa de variables para reemplazar valores dinámicos.
 
 - file: Lee el contenido de un archivo local y lo devuelve como una cadena de texto.
-
-- filemd5: Calcula y devuelve el hash MD5 de un archivo local, se usa para detectar cambios.
 
 - filebase64sha256: Calcula el hash SHA256 codificado en base64 de un archivo, se usa para verificar integridad.
 
@@ -106,6 +115,8 @@ contraseña: Admin123!@#
 - reverse: Invierte el orden de los elementos de una lista.
 
 - split: Divide una cadena de texto en una lista de subcadenas usando un delimitador.
+
+- urlencode: Codifica una cadena de texto de acuerdo con los estándares de URL
 
 ## Meta - argumentos
 ### for_each
