@@ -9,6 +9,7 @@ import { HostSelector } from './../../src/components/HostSelector';
 import { HostManager } from './../../src/components/HostManager'; // import path depends on your file structure
 
 import './styles.css';
+import React from 'react';
 
 interface MetricEntry {
   value: number | null;
@@ -80,9 +81,6 @@ export function Dashboard() {
         }
     }
 
-    useEffect(() => {
-        fetchData();
-    }, [apiUrl, authToken, email]);
 
     async function handleCreateHost(newHost: string, newIp: string) {
         console.log("Creating host:", newHost, newIp);
@@ -120,6 +118,18 @@ export function Dashboard() {
         const parts = match.split(": ");
         return parseFloat(parts[1]) || 0;
     }
+
+    useEffect(() => {
+        // Start interval
+        const interval = setInterval(() => {
+            fetchData();
+        }, 60_000); // 1 minute = 60,000 ms
+    
+        fetchData();
+    
+        return () => clearInterval(interval);
+    }, [apiUrl, authToken, email]);
+    
 
     const currentMetrics = metrics.find(m => m.ip === selectedHost)?.metrics || [];
     const total = getMetricValue("Total Memory");
@@ -213,17 +223,18 @@ export function Dashboard() {
                     />
 
                     <MetricCard
-                        title="Active Processes"
+                        title="Number of Processes Running
+"
                         value={
-                            getMetricValue("Active Processes") > 0
-                                ? getMetricValue("Active Processes")
+                            getMetricValue("Number of Processes Running") > 0
+                                ? getMetricValue("Number of Processes Running")
                                 : "No active processes"
                         }
-                        unit={getMetricValue("Active Processes") > 0 ? "proc" : ""}
+                        unit={getMetricValue("Number of Processes Running") > 0 ? "proc" : ""}
                         icon={ActivityIcon}
                         statusData={
-                            getMetricValue("Active Processes") > 0
-                                ? getAlertStatus("Active Processes", getMetricValue("Active Processes"))
+                            getMetricValue("Number of Processes Running") > 0
+                                ? getAlertStatus("Number of Processes Running", getMetricValue("Number of Processes Running"))
                                 : { status: "unknown", color: "#6b7280", icon: ActivityIcon, tooltip: "No active processes" }
                         }
                     />
