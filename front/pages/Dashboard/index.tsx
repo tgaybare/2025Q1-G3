@@ -27,6 +27,7 @@ export function Dashboard() {
     const [hosts, setHosts] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [hostsData, setHostsData] = useState<any[]>([]);
 
     const authToken = new URLSearchParams(window.location.search).get("authToken");
     const email = new URLSearchParams(window.location.search).get("email");
@@ -48,11 +49,10 @@ export function Dashboard() {
             if (!hostsResponse.ok) throw new Error("Failed to fetch hosts");
 
             const hostsData: any[] = await hostsResponse.json();
-            // HostsData might look like: [{ ip: { S: "1.2.3.4" } }, …]
             const plainHosts: string[] = hostsData.map((h) => h.ip.S);
+            setHostsData(hostsData);
             setHosts(plainHosts);
 
-            // 2) For each host, fetch its metrics
             const metricsData: MetricData[] = [];
             for (const ip of plainHosts) {
             const metricsResponse = await fetch(
@@ -64,8 +64,6 @@ export function Dashboard() {
             const raw = await metricsResponse.json();
             const metricsObj: Record<string, MetricEntry> = raw.metrics;
 
-            // Convert the metrics object into an array of strings
-            // e.g. [ "CPU Utilization: null", "Available Memory: null", ... ]
             const metricsArray: string[] = Object.entries(metricsObj).map(
                 ([key, entry]) => `${key}: ${entry.value ?? "N/A"}`
             );
@@ -120,7 +118,6 @@ export function Dashboard() {
     }
 
     useEffect(() => {
-        // Start interval
         const interval = setInterval(() => {
             fetchData();
         }, 60_000); // 1 minute = 60,000 ms
@@ -181,7 +178,7 @@ export function Dashboard() {
                     style={{ cursor: 'pointer' }}
                     >
                     <h2>{host}</h2>
-                    <p>{host}</p>
+                    <p>{hostsData.find(h => h.ip.S === host)?.hostname.S}</p>
                     </div>
                 ))}
                 </div>
