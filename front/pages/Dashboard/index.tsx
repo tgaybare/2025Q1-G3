@@ -1,5 +1,4 @@
 import  { useState, useEffect } from 'react';
-import { useHistoricalData } from './../../src/utils/useHistoricalData.ts';
 import { getAlertStatus } from './../../src/utils/getAlertStatus.ts';
 import { Activity as ActivityIcon } from 'lucide-react';
 import { MetricCard } from '../../src/components/MetricCard/index.tsx';
@@ -113,7 +112,7 @@ export function Dashboard() {
             setError(err.message || "Unknown error");
         }
     }
-    const historicalData = useHistoricalData();
+
     const [selectedHost, setSelectedHost] = useState(() => hosts[0]?.ip || '');
     function getMetricValue(metricName: string): number {
         const match = currentMetrics.find(m => m.startsWith(`${metricName}:`));
@@ -247,7 +246,6 @@ export function Dashboard() {
                 </div>
 
                 <div className="chart-section">
-                    <CPUChart data={historicalData} />
                     <MemoryPieChart data={memoryPieData} />
                 </div>
             </>

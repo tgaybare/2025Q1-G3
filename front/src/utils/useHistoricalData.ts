@@ -7,22 +7,17 @@ type HistoricalDataPoint = {
     processes: number;
 };
 
-export const useHistoricalData = () => {
+export const useHistoricalData = (host: string) => {
     const [data, setData] = useState<HistoricalDataPoint[]>([]);
+    const apiUrl = import.meta.env.VITE_REST_API_URL;
 
     useEffect(() => {
-        const initialData: HistoricalDataPoint[] = [];
-        for (let i = 30; i >= 0; i--) {
-            const timestamp = new Date(Date.now() - i * 60000);
-            initialData.push({
-                time: timestamp.toLocaleTimeString(),
-                cpu: Math.random() * 40 + 15,
-                memory: Math.random() * 30 + 50,
-                processes: Math.floor(Math.random() * 5) + 1
-            });
-        }
-        setData(initialData);
-    }, []);
+        if (!host) return;
+        fetch(`${apiUrl}/historical?host=${encodeURIComponent(host)}`)
+            .then(res => res.json())
+            .then(setData)
+            .catch(() => setData([]));
+    }, [host, apiUrl]);
 
     return data;
 };
