@@ -14,3 +14,11 @@ output "cognito_user_pool_id" {
 output "cognito_client_id" {
   value = module.cognito.client_id
 }
+
+output "SlaveServer1_ip" {
+  value = module.ec2_slaves["slave_1"].public_ip
+}
+
+output "SlaveServer2_ip" {
+  value = module.ec2_slaves["slave_2"].public_ip
+}
