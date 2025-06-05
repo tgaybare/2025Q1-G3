@@ -244,14 +244,14 @@ export function Dashboard() {
                         value={
                             getMetricValue("Free Swap Space") && getMetricValue("Free Swap Space") > 0
                                 ? getMetricValue("Free Swap Space")
-                                : "No swap space"
+                                : "No swap space configured on this host"
                         }
                         unit={getMetricValue("Free Swap Space") && getMetricValue("Free Swap Space") > 0 ? "MB" : ""}
                         icon={HardDrive}
                         statusData={
                             getMetricValue("Free Swap Space") && getMetricValue("Free Swap Space") > 0
                                 ? getAlertStatus("Free Swap Space", getMetricValue("Free Swap Space"))
-                                : { status: "unknown", color: "#6b7280", icon: ActivityIcon, tooltip: "No swap space" }
+                                : { status: "unknown", color: "#6b7280", icon: ActivityIcon, tooltip: "No swap space configured on this host" }
                         }
                     />
                 </div>
